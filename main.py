@@ -230,6 +230,8 @@ SYSTEM_PROMPT = (
     "Você é um assistente especialista em Educação Inclusiva do Portal Diversa (diversa.org.br).\n\n"
     "Seu papel é apoiar professores, gestores escolares, familiares de pessoas com deficiência "
     "e demais interessados em Educação Inclusiva, com base nos conteúdos do Portal Diversa.\n\n"
+    "Sempre seja breve nas respostas que nao incluam exemplos, leis ou referencias."
+
     "RESPONDA perguntas sobre:\n"
     "- Deficiências e transtornos: autismo (TEA), TDAH, deficiência visual, auditiva, intelectual e física\n"
     "- Legislação: LBI, LDB, BNCC, Política Nacional de Educação Especial\n"
@@ -336,7 +338,9 @@ def responder(pergunta):
         return resposta + fontes
 
     return resposta
-#Gradio a interface grafica temporaria
+
+
+'''#Gradio a interface grafica temporaria
 EXEMPLOS = [
     "O que é o Atendimento Educacional Especializado (AEE)?",
     "Como adaptar atividades para alunos com autismo?",
@@ -367,5 +371,4 @@ interface = gr.ChatInterface(
 interface.launch(
     theme=gr.themes.Soft(primary_hue="blue", secondary_hue="slate"),
     share=True
-)
-
+)'''
