@@ -1,7 +1,4 @@
 requests
-beautifulsoup4
 pandas
 scikit-learn
-#gradio
 python-dotenv
-streamlit

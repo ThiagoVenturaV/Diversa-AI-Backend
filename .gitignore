@@ -18,4 +18,9 @@ ENV/
 .idea/
 .DS_Store
 Thumbs.db
-.gradio/
+
+# Base de dados de artigos (arquivo grande — gere localmente)
+artigos.json
+
+# Uploads e arquivos temporários do servidor
+.files/
