@@ -180,22 +180,14 @@ class Handler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(f"Erro ao ler arquivo: {str(e)}".encode("utf-8"))
         else:
-            # Fallback para o index.html na raiz se o dist não estiver gerado ainda
-            root_file = "index.html" if clean_path in ("/", "/index.html") else clean_path.lstrip("/")
-            if root_file == "index.html" and os.path.exists(root_file):
-                try:
-                    self.send_response(200)
-                    self.send_header("Content-Type", "text/html; charset=utf-8")
-                    self._cors()
-                    self.end_headers()
-                    with open(root_file, "rb") as f:
-                        self.wfile.write(f.read())
-                except Exception:
-                    self.send_response(404)
-                    self.end_headers()
-            else:
-                self.send_response(404)
-                self.end_headers()
+            # dist/ não encontrado — rode "npm run build" dentro de frontend/ primeiro
+            self.send_response(404)
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self._cors()
+            self.end_headers()
+            self.wfile.write(
+                b"Frontend nao encontrado. Execute: cd frontend && npm run build"
+            )
 
     def do_POST(self):
         if self.path != "/ask":
