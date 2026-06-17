@@ -1,506 +1,578 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Diversa AI — Assistente de Educação Inclusiva</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diversa AI — Assistente de Educação Inclusiva</title>
+  <meta name="description" content="Assistente virtual especializado em Educação Inclusiva, baseado nos conteúdos do Portal Diversa." />
 
-  :root {
-    --bg:       #0d1117;
-    --surface:  #161b22;
-    --border:   #30363d;
-    --accent:   #58a6ff;
-    --accent2:  #1f6feb;
-    --user-bg:  #1f6feb;
-    --bot-bg:   #1c2128;
-    --text:     #e6edf3;
-    --muted:    #8b949e;
-    --source:   #21262d;
-    --green:    #3fb950;
-    --radius:   14px;
-  }
+  <!-- Font Awesome 6 Free -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <!-- Inter font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React 18 UMD -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel Standalone (JSX) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  body {
-    font-family: 'Inter', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  /* ── Header ── */
-  header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 20px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-
-  .logo {
-    width: 36px; height: 36px;
-    background: linear-gradient(135deg, var(--accent2), var(--accent));
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-    flex-shrink: 0;
-  }
-
-  .header-text h1 { font-size: 16px; font-weight: 700; color: var(--text); }
-  .header-text p  { font-size: 12px; color: var(--muted); }
-
-  .status {
-    margin-left: auto;
-    display: flex; align-items: center; gap: 6px;
-    font-size: 12px; color: var(--muted);
-  }
-  .dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--green);
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: .4; }
-  }
-
-  /* ── Chat area ── */
-  #chat {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px 16px 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    scroll-behavior: smooth;
-  }
-
-  #chat::-webkit-scrollbar { width: 6px; }
-  #chat::-webkit-scrollbar-track { background: transparent; }
-  #chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-  /* ── Mensagem ── */
-  .msg {
-    display: flex;
-    gap: 10px;
-    max-width: 800px;
-    width: 100%;
-    animation: fadeUp .25s ease;
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .msg.user { flex-direction: row-reverse; align-self: flex-end; }
-  .msg.bot  { align-self: flex-start; }
-
-  .avatar {
-    width: 32px; height: 32px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 15px; flex-shrink: 0; margin-top: 2px;
-  }
-  .user .avatar { background: var(--user-bg); }
-  .bot  .avatar { background: var(--bot-bg); border: 1px solid var(--border); }
-
-  .bubble {
-    padding: 12px 16px;
-    border-radius: var(--radius);
-    font-size: 14px;
-    line-height: 1.65;
-    max-width: calc(100% - 44px);
-    word-break: break-word;
-  }
-  .user .bubble {
-    background: var(--user-bg);
-    border-bottom-right-radius: 4px;
-    color: #fff;
-  }
-  .bot .bubble {
-    background: var(--bot-bg);
-    border: 1px solid var(--border);
-    border-bottom-left-radius: 4px;
-  }
-
-  /* cursor piscando durante streaming */
-  .cursor::after {
-    content: '▋';
-    display: inline-block;
-    animation: blink .7s step-end infinite;
-    color: var(--accent);
-    margin-left: 2px;
-  }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
-  /* ── Fontes ── */
-  .sources {
-    margin-top: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .sources-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    color: var(--muted);
-    font-weight: 600;
-    margin-bottom: 2px;
-  }
-  .source-card {
-    background: var(--source);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 12px;
-    color: var(--muted);
-    text-decoration: none;
-    transition: border-color .15s, color .15s;
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  .source-card:hover { border-color: var(--accent); color: var(--accent); }
-  .source-card .icon { opacity: .5; flex-shrink: 0; margin-top: 1px; }
-  .source-card .title { color: var(--text); font-weight: 500; }
-  .source-card .url   { font-size: 11px; opacity: .6; }
-
-  /* ── Welcome ── */
-  .welcome {
-    text-align: center;
-    padding: 40px 20px;
-    opacity: .85;
-  }
-  .welcome .big-icon { font-size: 48px; margin-bottom: 12px; }
-  .welcome h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
-  .welcome p  { font-size: 14px; color: var(--muted); max-width: 400px; margin: 0 auto 20px; }
-  .chips      { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-  .chip {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 7px 14px;
-    font-size: 13px;
-    cursor: pointer;
-    color: var(--text);
-    transition: border-color .15s, color .15s;
-  }
-  .chip:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* ── Typing indicator ── */
-  .typing { display: flex; align-items: center; gap: 4px; padding: 4px 0; }
-  .typing span {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--muted);
-    animation: bounce .8s infinite;
-  }
-  .typing span:nth-child(2) { animation-delay: .15s; }
-  .typing span:nth-child(3) { animation-delay: .3s;  }
-  @keyframes bounce {
-    0%,80%,100% { transform: translateY(0); }
-    40%         { transform: translateY(-6px); }
-  }
-
-  /* ── Input area ── */
-  #input-area {
-    padding: 12px 16px 16px;
-    background: var(--bg);
-    border-top: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-
-  .input-row {
-    display: flex;
-    gap: 10px;
-    align-items: flex-end;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 10px 12px 10px 16px;
-    transition: border-color .2s;
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  .input-row:focus-within { border-color: var(--accent); }
-
-  #input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--text);
-    font-size: 14px;
-    font-family: inherit;
-    resize: none;
-    min-height: 24px;
-    max-height: 140px;
-    line-height: 1.5;
-  }
-  #input::placeholder { color: var(--muted); }
-
-  #send {
-    width: 36px; height: 36px;
-    border-radius: 8px;
-    border: none;
-    background: var(--accent2);
-    color: #fff;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    transition: background .15s, transform .1s;
-  }
-  #send:hover:not(:disabled) { background: var(--accent); }
-  #send:active:not(:disabled) { transform: scale(.95); }
-  #send:disabled { background: var(--border); cursor: not-allowed; }
-
-  #send svg { width: 16px; height: 16px; }
-
-  .hint { text-align: center; font-size: 11px; color: var(--muted); margin-top: 8px; }
-</style>
-</head>
-<body>
-
-<!-- ── Header ── -->
-<header>
-  <div class="logo">🎓</div>
-  <div class="header-text">
-    <h1>Diversa AI</h1>
-    <p>Assistente de Educação Inclusiva · Portal Diversa</p>
-  </div>
-  <div class="status">
-    <div class="dot"></div>
-    Online
-  </div>
-</header>
-
-<!-- ── Chat ── -->
-<div id="chat">
-  <div class="welcome" id="welcome">
-    <div class="big-icon">🌟</div>
-    <h2>Olá! Como posso ajudar?</h2>
-    <p>Sou especialista em Educação Inclusiva com base nos conteúdos do Portal Diversa. Pergunte sobre deficiências, legislação, estratégias pedagógicas e muito mais.</p>
-    <div class="chips">
-      <button class="chip" onclick="fill('O que é educação inclusiva?')">O que é educação inclusiva?</button>
-      <button class="chip" onclick="fill('Como incluir alunos com autismo?')">Como incluir alunos com autismo?</button>
-      <button class="chip" onclick="fill('O que é o AEE?')">O que é o AEE?</button>
-      <button class="chip" onclick="fill('Legislação sobre inclusão escolar')">Legislação sobre inclusão</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── Input ── -->
-<div id="input-area">
-  <div class="input-row">
-    <textarea
-      id="input"
-      placeholder="Digite sua pergunta sobre Educação Inclusiva..."
-      rows="1"
-    ></textarea>
-    <button id="send" onclick="send()" title="Enviar (Enter)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="22" y1="2" x2="11" y2="13"/>
-        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-      </svg>
-    </button>
-  </div>
-  <p class="hint">Enter para enviar · Shift+Enter para nova linha</p>
-</div>
-
-<script>
-const chat  = document.getElementById('chat');
-const input = document.getElementById('input');
-const btn   = document.getElementById('send');
-
-// auto-resize do textarea
-input.addEventListener('input', () => {
-  input.style.height = 'auto';
-  input.style.height = Math.min(input.scrollHeight, 140) + 'px';
-});
-
-input.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    send();
-  }
-});
-
-function fill(text) {
-  input.value = text;
-  input.dispatchEvent(new Event('input'));
-  input.focus();
-}
-
-function scrollBottom() {
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function addMsg(role, html = '') {
-  const welcome = document.getElementById('welcome');
-  if (welcome) welcome.remove();
-
-  const msg    = document.createElement('div');
-  msg.className = `msg ${role}`;
-
-  const avatar = document.createElement('div');
-  avatar.className = 'avatar';
-  avatar.textContent = role === 'user' ? '🙋' : '🎓';
-
-  const bubble = document.createElement('div');
-  bubble.className = 'bubble';
-  bubble.innerHTML  = html;
-
-  msg.appendChild(avatar);
-  msg.appendChild(bubble);
-  chat.appendChild(msg);
-  scrollBottom();
-  return bubble;
-}
-
-function escHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-async function send() {
-  const pergunta = input.value.trim();
-  if (!pergunta || btn.disabled) return;
-
-  // Limpa input
-  input.value = '';
-  input.style.height = 'auto';
-  btn.disabled = true;
-
-  // Mensagem do usuário
-  addMsg('user', escHtml(pergunta));
-
-  // Placeholder do bot com typing indicator
-  const botBubble = addMsg('bot', '<div class="typing"><span></span><span></span><span></span></div>');
-
-  let fullText    = '';
-  let sourcesHtml = '';
-  let started     = false;
-
-  try {
-    const response = await fetch('/ask', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ pergunta }),
-    });
-
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    if (!response.body) throw new Error('Sem corpo na resposta');
-
-    const reader  = response.body.getReader();
-    const decoder = new TextDecoder();
-    let   buffer  = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-
-      // Processa eventos SSE do buffer
-      const parts = buffer.split('\n\n');
-      buffer = parts.pop(); // guarda fragmento incompleto
-
-      for (const part of parts) {
-        if (!part.trim()) continue;
-
-        let eventType = 'message';
-        let dataStr   = '';
-
-        for (const line of part.split('\n')) {
-          if (line.startsWith('event: ')) eventType = line.slice(7).trim();
-          if (line.startsWith('data: '))  dataStr   = line.slice(6);
-        }
-
-        if (!dataStr) continue;
-        let data;
-        try { data = JSON.parse(dataStr); } catch { continue; }
-
-        if (eventType === 'sources' && Array.isArray(data) && data.length > 0) {
-          sourcesHtml = buildSources(data);
-        }
-
-        if (eventType === 'token') {
-          if (!started) {
-            botBubble.classList.add('cursor');
-            botBubble.innerHTML = '';
-            started = true;
-          }
-          fullText += data.text;
-          // Renderiza markdown básico
-          botBubble.innerHTML = renderMd(fullText);
-          if (sourcesHtml) botBubble.innerHTML += sourcesHtml;
-          botBubble.classList.add('cursor');
-          scrollBottom();
-        }
-
-        if (eventType === 'done') {
-          botBubble.classList.remove('cursor');
-        }
-
-        if (eventType === 'error') {
-          botBubble.classList.remove('cursor');
-          botBubble.innerHTML = `❌ ${escHtml(data.message || 'Erro desconhecido')}`;
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: '#a813f7',
+            'brand-dark': '#6b09c0',
+            'brand-light': '#c44ef9',
+          },
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
         }
       }
+    };
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body, #root { height: 100%; }
+    body { font-family: 'Inter', sans-serif; background: #000; color: #fff; overflow: hidden; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(168,19,247,0.4); border-radius: 2px; }
+
+    /* ── Page background ── */
+    .page-bg {
+      background:
+        radial-gradient(ellipse 85% 40% at 50% 0%, rgba(168,19,247,0.16) 0%, transparent 65%),
+        #000;
     }
 
-    // garante remoção do cursor
-    botBubble.classList.remove('cursor');
-    if (!started) {
-      botBubble.innerHTML = '⚠️ Nenhuma resposta recebida.';
+    /* ── CSS animations (substituem Framer Motion) ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.7); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes slideLeft {
+      from { opacity: 0; transform: translateX(-10px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes blink {
+      0%,100% { opacity: 1; }
+      50%     { opacity: 0; }
+    }
+    @keyframes dotBounce {
+      0%,60%,100% { transform: translateY(0);    opacity: .35; }
+      30%          { transform: translateY(-7px); opacity: 1;   }
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; }
+      50%     { opacity: .35; }
+    }
+    @keyframes chipStagger {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
-  } catch (err) {
-    botBubble.classList.remove('cursor');
-    botBubble.innerHTML = `❌ Falha na conexão: ${escHtml(err.message)}`;
-  } finally {
-    btn.disabled = false;
-    input.focus();
-  }
+    .anim-slide-down  { animation: slideDown .4s ease both; }
+    .anim-scale-in    { animation: scaleIn .45s cubic-bezier(.175,.885,.32,1.275) both; }
+    .anim-fade-in     { animation: fadeIn .3s ease both; }
+    .anim-fade-up     { animation: fadeUp .3s ease both; }
+    .anim-slide-left  { animation: slideLeft .25s ease both; }
+
+    /* Chip stagger using CSS animation-delay */
+    .chip-0 { animation: chipStagger .35s ease both; animation-delay: .20s; }
+    .chip-1 { animation: chipStagger .35s ease both; animation-delay: .26s; }
+    .chip-2 { animation: chipStagger .35s ease both; animation-delay: .32s; }
+    .chip-3 { animation: chipStagger .35s ease both; animation-delay: .38s; }
+    .chip-4 { animation: chipStagger .35s ease both; animation-delay: .44s; }
+    .chip-5 { animation: chipStagger .35s ease both; animation-delay: .50s; }
+
+    /* Message entrance delay */
+    .msg-enter { animation: fadeUp .28s ease both; }
+
+    /* Source card stagger */
+    .src-0 { animation: slideLeft .25s ease both; animation-delay: .00s; }
+    .src-1 { animation: slideLeft .25s ease both; animation-delay: .07s; }
+    .src-2 { animation: slideLeft .25s ease both; animation-delay: .14s; }
+
+    /* ── Streaming cursor ── */
+    .streaming-cursor::after {
+      content: '▋';
+      display: inline-block;
+      color: #a813f7;
+      animation: blink .65s step-end infinite;
+      margin-left: 2px;
+    }
+
+    /* ── Typing dots ── */
+    .dot { width:6px; height:6px; border-radius:50%; background:#a813f7; animation: dotBounce 1.2s ease-in-out infinite; }
+    .dot:nth-child(2) { animation-delay: .18s; }
+    .dot:nth-child(3) { animation-delay: .36s; }
+
+    /* ── Status dot ── */
+    .status-ping { animation: pulse 2s ease-in-out infinite; }
+
+    /* ── Glass card ── */
+    .glass {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(168,19,247,0.2);
+    }
+
+    /* ── User bubble ── */
+    .bubble-user {
+      background: linear-gradient(135deg, #a813f7, #6b09c0);
+      box-shadow: 0 4px 20px rgba(168,19,247,0.35);
+    }
+
+    /* ── Chip ── */
+    .chip {
+      border: 1px solid rgba(168,19,247,0.28);
+      background: rgba(168,19,247,0.05);
+      color: rgba(255,255,255,0.75);
+      cursor: pointer;
+      transition: border-color .15s, color .15s, background .15s, transform .1s;
+    }
+    .chip:hover  { border-color:#a813f7; color:#fff; background:rgba(168,19,247,0.13); transform: scale(1.03); }
+    .chip:active { transform: scale(.97); }
+
+    /* ── Source card ── */
+    .source-card {
+      display:flex; align-items:flex-start; gap:10px;
+      padding:10px 12px; border-radius:10px;
+      border: 1px solid rgba(168,19,247,0.14);
+      background: rgba(168,19,247,0.05);
+      text-decoration:none;
+      transition: border-color .15s, background .15s, transform .15s;
+    }
+    .source-card:hover { border-color:rgba(168,19,247,.5); background:rgba(168,19,247,.1); transform:translateX(3px); }
+
+    /* ── Send button ── */
+    .btn-send {
+      background: #a813f7;
+      box-shadow: 0 0 16px rgba(168,19,247,.5);
+      border: none; cursor: pointer; color: #fff;
+      transition: background .15s, box-shadow .15s, transform .1s;
+    }
+    .btn-send:hover:not(:disabled)  { background:#c44ef9; box-shadow:0 0 26px rgba(168,19,247,.7); }
+    .btn-send:active:not(:disabled) { transform:scale(.93); }
+    .btn-send:disabled { background:rgba(168,19,247,.25); box-shadow:none; cursor:not-allowed; }
+
+    /* ── Input ── */
+    textarea { background:transparent; border:none; outline:none; color:#fff; font-family:inherit; resize:none; }
+    textarea::placeholder { color:rgba(255,255,255,.3); }
+    .input-wrap { transition: border-color .2s, box-shadow .2s; border:1px solid rgba(168,19,247,.22); }
+    .input-wrap:focus-within { border-color:#a813f7; box-shadow:0 0 0 2px rgba(168,19,247,.15); }
+
+    /* ── Prose inside bot messages ── */
+    .prose-bot a       { color:#c44ef9; text-decoration:underline; }
+    .prose-bot strong  { color:#d580fb; }
+    .prose-bot ul      { padding-left:1.2em; margin:.4em 0; }
+    .prose-bot li      { margin:.2em 0; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+/* ─────────────────────────────────────────────────────────────────
+   DIVERSA AI — React 18 + Tailwind + Font Awesome 6 via CDN
+   Animações: CSS puro (sem Framer Motion — UMD incompatível)
+   Cores: #a813f7  #ffffff  #000000
+────────────────────────────────────────────────────────────────── */
+const { useState, useRef, useEffect, useCallback } = React;
+
+// ── Quick chips ─────────────────────────────────────────────────
+const CHIPS = [
+  { fa: 'fa-graduation-cap', text: 'O que é educação inclusiva?' },
+  { fa: 'fa-puzzle-piece',   text: 'Como incluir alunos com autismo (TEA)?' },
+  { fa: 'fa-clipboard-list', text: 'O que é o AEE?' },
+  { fa: 'fa-scale-balanced', text: 'Direitos garantidos pela LBI' },
+  { fa: 'fa-microchip',      text: 'Tecnologia assistiva na escola' },
+  { fa: 'fa-people-group',   text: 'Como a família pode apoiar a inclusão?' },
+];
+
+// ── Markdown mínimo ─────────────────────────────────────────────
+function md(raw) {
+  if (!raw) return '';
+  // Evita re-escapar HTML já processado (ícones FA em msgs de erro)
+  if (raw.startsWith('<i ')) return raw;
+  return raw
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/\[(.+?)\]\((https?:\/\/[^\)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/(https?:\/\/[^\s<"]+)/g,'<a href="$&" target="_blank" rel="noopener">$&</a>')
+    .replace(/^- (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>)/g,'<ul class="list-disc pl-5 my-1">$1</ul>')
+    .replace(/\n/g,'<br/>');
 }
 
-function buildSources(artigos) {
-  const items = artigos.map(a => `
-    <a class="source-card" href="${a.url}" target="_blank" rel="noopener">
-      <span class="icon">📄</span>
-      <span>
-        <div class="title">${escHtml(a.titulo)}</div>
-        <div class="url">${escHtml(a.url)}</div>
-      </span>
+// ═══════════════════════════════════════════════════════════════
+// COMPONENTS
+// ═══════════════════════════════════════════════════════════════
+
+/* ── Header ──────────────────────────────────────────────────── */
+function Header() {
+  return (
+    <header
+      className="anim-slide-down flex-shrink-0 flex items-center gap-3 px-5 py-3 z-10"
+      style={{ background:'rgba(0,0,0,0.8)', backdropFilter:'blur(20px)', borderBottom:'1px solid rgba(168,19,247,0.2)' }}
+    >
+      {/* Logo */}
+      <div
+        className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 select-none"
+        style={{ background:'linear-gradient(135deg,#a813f7,#5c09ab)', boxShadow:'0 0 18px rgba(168,19,247,0.5)' }}
+      >
+        <i className="fa-solid fa-book-open" style={{ fontSize:'14px', color:'#fff' }} />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <h1 className="text-sm font-bold tracking-tight leading-tight">Diversa AI</h1>
+        <p className="text-xs leading-tight truncate" style={{ color:'rgba(255,255,255,0.38)' }}>
+          Educação Inclusiva · Portal Diversa
+        </p>
+      </div>
+
+      {/* Status */}
+      <div className="flex items-center gap-1.5">
+        <span className="relative flex h-2 w-2">
+          <span className="status-ping absolute inset-0 rounded-full" style={{ background:'#a813f7' }} />
+          <span className="relative inline-flex rounded-full h-2 w-2" style={{ background:'#a813f7' }} />
+        </span>
+        <span className="text-xs" style={{ color:'rgba(255,255,255,0.38)' }}>Online</span>
+      </div>
+    </header>
+  );
+}
+
+/* ── Welcome screen ───────────────────────────────────────────── */
+function Welcome({ onChip }) {
+  return (
+    <div className="flex flex-col items-center text-center px-6 py-14 max-w-2xl mx-auto">
+      {/* Icon */}
+      <div
+        className="anim-scale-in w-20 h-20 rounded-3xl flex items-center justify-center mb-6 select-none"
+        style={{ background:'linear-gradient(135deg,#a813f7,#5c09ab)', boxShadow:'0 0 48px rgba(168,19,247,0.5)', animationDelay:'.05s' }}
+      >
+        <i className="fa-solid fa-star" style={{ fontSize:'30px', color:'#fff' }} />
+      </div>
+
+      <h2 className="anim-fade-up text-2xl font-bold mb-2" style={{ animationDelay:'.12s' }}>
+        Olá! Eu sou a <span style={{ color:'#a813f7' }}>Diversa</span>
+      </h2>
+
+      <p className="anim-fade-in text-sm leading-relaxed mb-8 max-w-sm"
+         style={{ color:'rgba(255,255,255,0.45)', animationDelay:'.2s' }}>
+        Assistente especialista em Educação Inclusiva, baseada nos
+        conteúdos do <span style={{ color:'rgba(168,19,247,0.85)' }}>Portal Diversa</span>.
+        Pergunte sobre deficiências, legislação, pedagogia e mais.
+      </p>
+
+      <div className="flex flex-wrap justify-center gap-2">
+        {CHIPS.map((c, i) => (
+          <button
+            key={c.text}
+            onClick={() => onChip(c.text)}
+            className={`chip chip-${i} flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium`}
+          >
+            <i className={`fa-solid ${c.fa}`} style={{ fontSize:'11px', color:'#a813f7' }} />
+            <span>{c.text}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Bot avatar ───────────────────────────────────────────────── */
+function BotAvatar() {
+  return (
+    <div
+      className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1 select-none"
+      style={{ background:'linear-gradient(135deg,#a813f7,#5c09ab)', boxShadow:'0 0 10px rgba(168,19,247,0.4)' }}
+    >
+      <i className="fa-solid fa-robot" style={{ fontSize:'12px', color:'#fff' }} />
+    </div>
+  );
+}
+
+/* ── Typing indicator ─────────────────────────────────────────── */
+function Typing() {
+  return (
+    <div className="msg-enter flex items-start gap-3 px-4 py-1">
+      <BotAvatar />
+      <div className="glass flex items-center gap-1.5 px-4 py-3 rounded-2xl rounded-tl-[4px]">
+        <div className="dot" />
+        <div className="dot" />
+        <div className="dot" />
+      </div>
+    </div>
+  );
+}
+
+/* ── Source card ─────────────────────────────────────────────── */
+function SourceCard({ titulo, url, index }) {
+  const cls = `source-card src-${Math.min(index, 2)}`;
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer" className={cls}>
+      {/* Accent bar */}
+      <div className="w-[3px] self-stretch rounded-full flex-shrink-0" style={{ background:'#a813f7' }} />
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-medium leading-snug" style={{ color:'rgba(255,255,255,0.85)', WebkitLineClamp:2, display:'-webkit-box', WebkitBoxOrient:'vertical', overflow:'hidden' }}>
+          {titulo}
+        </p>
+        <p className="text-[10px] mt-0.5 truncate" style={{ color:'rgba(168,19,247,0.65)' }}>
+          {url}
+        </p>
+      </div>
+      <i className="fa-solid fa-arrow-up-right-from-square flex-shrink-0 mt-0.5" style={{ fontSize:'10px', color:'rgba(168,19,247,0.45)' }} />
     </a>
-  `).join('');
-  return `<div class="sources"><div class="sources-label">📚 Fontes consultadas</div>${items}</div>`;
+  );
 }
 
-// Renderizador Markdown mínimo: negrito, itálico, links, listas, quebras
-function renderMd(text) {
-  return escHtml(text)
-    // negrito **texto**
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    // itálico *texto*
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    // links [texto](url)
-    .replace(/\[(.+?)\]\((https?:\/\/[^\)]+)\)/g,
-      '<a href="$2" target="_blank" rel="noopener" style="color:var(--accent)">$1</a>')
-    // URLs soltas
-    .replace(/(https?:\/\/[^\s<]+)/g,
-      '<a href="$1" target="_blank" rel="noopener" style="color:var(--accent)">$1</a>')
-    // listas - item
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>)/gs, '<ul style="padding-left:1.2em;margin:.4em 0">$1</ul>')
-    // quebras de linha
-    .replace(/\n/g, '<br>');
+/* ── User message ────────────────────────────────────────────── */
+function UserMsg({ text }) {
+  return (
+    <div className="msg-enter flex justify-end px-4 py-1">
+      <div className="bubble-user rounded-2xl rounded-tr-[4px] px-4 py-3 text-sm leading-relaxed max-w-[78%]">
+        {text}
+      </div>
+    </div>
+  );
 }
+
+/* ── Bot message ─────────────────────────────────────────────── */
+function BotMsg({ text, sources, streaming }) {
+  return (
+    <div className="msg-enter flex items-start gap-3 px-4 py-1">
+      <BotAvatar />
+      <div className="flex-1 min-w-0" style={{ maxWidth:'calc(100% - 44px)' }}>
+        {/* Bubble */}
+        <div className="glass rounded-2xl rounded-tl-[4px] px-4 py-3">
+          <div
+            className={`text-sm leading-relaxed prose-bot${streaming && text ? ' streaming-cursor' : ''}`}
+            style={{ color:'rgba(255,255,255,0.88)' }}
+            dangerouslySetInnerHTML={{ __html: md(text) }}
+          />
+        </div>
+
+        {/* Sources */}
+        {sources && sources.length > 0 && (
+          <div className="mt-2 space-y-1.5 anim-fade-in">
+            <p className="text-[10px] font-semibold tracking-widest px-1 mb-1"
+               style={{ color:'rgba(168,19,247,0.6)' }}>
+              <i className="fa-solid fa-book mr-1.5" />FONTES CONSULTADAS
+            </p>
+            {sources.map((s, i) => (
+              <SourceCard key={s.url + i} titulo={s.titulo} url={s.url} index={i} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── Input area ──────────────────────────────────────────────── */
+function InputArea({ value, onChange, onSend, loading }) {
+  const ref = useRef(null);
+
+  const resize = () => {
+    if (!ref.current) return;
+    ref.current.style.height = 'auto';
+    ref.current.style.height = Math.min(ref.current.scrollHeight, 140) + 'px';
+  };
+
+  const onKey = e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onSend(); }
+  };
+
+  const canSend = !loading && value.trim();
+
+  return (
+    <div
+      className="flex-shrink-0 px-4 pb-5 pt-3"
+      style={{ borderTop:'1px solid rgba(168,19,247,0.12)', background:'rgba(0,0,0,0.65)', backdropFilter:'blur(16px)' }}
+    >
+      <div className="max-w-3xl mx-auto">
+        <div className="input-wrap flex items-end gap-3 px-4 py-3 rounded-2xl"
+             style={{ background:'rgba(255,255,255,0.03)' }}>
+          <textarea
+            ref={ref}
+            value={value}
+            onChange={e => { onChange(e.target.value); resize(); }}
+            onKeyDown={onKey}
+            placeholder="Pergunte sobre Educação Inclusiva..."
+            rows={1}
+            disabled={loading}
+            className="flex-1 text-sm leading-relaxed"
+            style={{ minHeight:'24px', maxHeight:'140px' }}
+          />
+          <button
+            onClick={onSend}
+            disabled={!canSend}
+            className="btn-send w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+          >
+            <i className="fa-solid fa-paper-plane" style={{ fontSize:'13px' }} />
+          </button>
+        </div>
+        <p className="text-center text-[10px] mt-2" style={{ color:'rgba(255,255,255,0.18)' }}>
+          Enter para enviar · Shift+Enter para nova linha
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// APP — Estado e SSE
+// ═══════════════════════════════════════════════════════════════
+let _id = 0;
+const uid = () => ++_id;
+
+function App() {
+  const [msgs,    setMsgs]    = useState([]);
+  const [input,   setInput]   = useState('');
+  const [loading, setLoading] = useState(false);
+  const chatEl = useRef(null);
+
+  const scroll = useCallback(() =>
+    requestAnimationFrame(() => {
+      if (chatEl.current) chatEl.current.scrollTop = chatEl.current.scrollHeight;
+    }), []);
+
+  useEffect(scroll, [msgs, loading, scroll]);
+
+  const send = useCallback(async (override) => {
+    const q = (override ?? input).trim();
+    if (!q || loading) return;
+
+    setInput('');
+    setLoading(true);
+
+    const uUser = uid();
+    const uBot  = uid();
+
+    setMsgs(p => [
+      ...p,
+      { id:uUser, role:'user', text:q },
+      { id:uBot,  role:'bot',  text:'', sources:null, streaming:true },
+    ]);
+
+    let full = '';
+
+    try {
+      const res = await fetch('/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pergunta: q }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const reader  = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+
+        const parts = buf.split('\n\n');
+        buf = parts.pop();
+
+        for (const part of parts) {
+          if (!part.trim()) continue;
+          let ev = 'message', data = '';
+          for (const line of part.split('\n')) {
+            if (line.startsWith('event: ')) ev   = line.slice(7).trim();
+            if (line.startsWith('data: '))  data = line.slice(6);
+          }
+          if (!data) continue;
+          let obj;
+          try { obj = JSON.parse(data); } catch { continue; }
+
+          if (ev === 'sources' && Array.isArray(obj)) {
+            setMsgs(p => p.map(m => m.id===uBot ? {...m, sources:obj} : m));
+          }
+          if (ev === 'token') {
+            full += obj.text;
+            const snap = full;
+            setMsgs(p => p.map(m => m.id===uBot ? {...m, text:snap} : m));
+            scroll();
+          }
+          if (ev === 'done') {
+            setMsgs(p => p.map(m => m.id===uBot ? {...m, streaming:false} : m));
+          }
+          if (ev === 'error') {
+            setMsgs(p => p.map(m => m.id===uBot
+              ? {...m, text:`<i class="fa-solid fa-circle-xmark" style="color:#f75757;margin-right:6px"></i>${obj.message||'Erro'}`, streaming:false}
+              : m));
+          }
+        }
+      }
+    } catch (e) {
+      setMsgs(p => p.map(m => m.id===uBot
+        ? {...m, text:`<i class="fa-solid fa-triangle-exclamation" style="color:#f75757;margin-right:6px"></i>Falha na conexão: ${e.message}`, streaming:false}
+        : m));
+    } finally {
+      setLoading(false);
+      setMsgs(p => p.map(m => m.id===uBot ? {...m, streaming:false} : m));
+    }
+  }, [input, loading, scroll]);
+
+  const noMsgs    = msgs.length === 0;
+  const lastBot   = [...msgs].reverse().find(m => m.role === 'bot');
+  const showTyping = loading && (!lastBot || lastBot.text === '');
+
+  return (
+    <div className="page-bg flex flex-col h-full overflow-hidden">
+      <Header />
+
+      <div ref={chatEl} className="flex-1 overflow-y-auto">
+        <div className="max-w-3xl mx-auto py-4 space-y-1">
+
+          {noMsgs && <Welcome onChip={t => send(t)} />}
+
+          {msgs.map(m =>
+            m.role === 'user'
+              ? <UserMsg  key={m.id} text={m.text} />
+              : <BotMsg   key={m.id} text={m.text} sources={m.sources} streaming={m.streaming} />
+          )}
+
+          {showTyping && <Typing key="typing" />}
+        </div>
+      </div>
+
+      <InputArea
+        value={input}
+        onChange={setInput}
+        onSend={() => send()}
+        loading={loading}
+      />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 </script>
 </body>
 </html>

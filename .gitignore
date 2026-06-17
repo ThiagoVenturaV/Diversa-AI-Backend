@@ -24,3 +24,11 @@ artigos.json
 
 # Uploads e arquivos temporários do servidor
 .files/
+
+# Build do frontend (gerado pelo Vite)
+dist/
+frontend/dist/
+
+# Dependências do Node
+node_modules/
+frontend/node_modules/
