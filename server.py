@@ -70,11 +70,11 @@ REGRAS OBRIGATÓRIAS:
 
 FORA DO ESCOPO (diagnósticos médicos, política partidária, temas alheios à educação inclusiva):
 → Responda apenas: 'Minha especialidade é Educação Inclusiva. Posso te ajudar com alguma dúvida sobre esse tema?'
+e nao continue a resposta.
 
 FORMATO:
 - Português brasileiro, claro, acessível e empático
-- Máximo 400 tokens
-- Se usar artigo do portal, cite título e URL ao final"""
+- Máximo 400 tokens"""
 
 def buscar_artigos_relevantes(pergunta, top_k=3):
     vetor   = vectorizer.transform([pergunta])
@@ -94,7 +94,7 @@ def stream_groq(messages):
     """Faz streaming do Groq, gerando chunks de texto conforme chegam."""
     payload = {
         "model":       GROQ_MODEL,
-        "max_tokens":  400,
+        "max_tokens":  600,
         "temperature": 0.3,
         "messages":    messages,
         "stream":      True,
@@ -229,7 +229,6 @@ class Handler(BaseHTTPRequestHandler):
                 ])
                 instrucao = (
                     "Use os trechos abaixo do Portal Diversa para responder a pergunta. "
-                    "Cite o título e a URL do artigo mais relevante ao final da resposta."
                 )
             else:
                 contexto  = "Nenhum artigo relevante encontrado na base atual do Portal Diversa."
