@@ -39,7 +39,11 @@ export function loadVLibras() {
 
     script.onload = () => {
       try {
-        new window.VLibras.Widget(VLIBRAS_APP_URL);
+        new window.VLibras.Widget({
+          rootPath: VLIBRAS_APP_URL,
+          position: 'L',
+          opacity: 1
+        });
         // VLibras faz setup assíncrono — aguarda antes de resolver
         setTimeout(resolve, 1800);
       } catch (err) {
