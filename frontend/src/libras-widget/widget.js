@@ -121,7 +121,6 @@ export class Widget {
     // Carrega VLibras
     try {
       await loadVLibras();
-      hideVLibrasNativeButton();
       this._ready = true;
 
       // Troca loader pelo ícone de mão
@@ -223,14 +222,7 @@ export class Widget {
     if (!texto?.trim()) return;
 
     // Garante que o painel está aberto
-    if (!this._open) {
-      this._open = true;
-      this._btn.classList.add('is-open');
-      this._btn.setAttribute('aria-label', 'Fechar tradutor LIBRAS');
-      this._btn.innerHTML = ICON_CLOSE;
-      this._btn.appendChild(this._badge);
-      openVLibrasPanel();
-    }
+    openVLibrasPanel();
 
     this._pulse();
     translate(texto);

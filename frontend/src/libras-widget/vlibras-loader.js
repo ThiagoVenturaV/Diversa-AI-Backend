@@ -45,7 +45,16 @@ export function loadVLibras() {
           opacity: 1
         });
         // VLibras faz setup assíncrono — aguarda antes de resolver
-        setTimeout(resolve, 1800);
+        setTimeout(() => {
+          // Mantém _panelOpen sincronizado se o usuário clicar no botão nativo
+          const btn = document.querySelector('[vw-access-button]');
+          if (btn) {
+            btn.addEventListener('click', () => {
+              _panelOpen = !_panelOpen;
+            });
+          }
+          resolve();
+        }, 1800);
       } catch (err) {
         reject(new Error(`[LibrasWidget] Falha ao inicializar VLibras: ${err.message}`));
       }
