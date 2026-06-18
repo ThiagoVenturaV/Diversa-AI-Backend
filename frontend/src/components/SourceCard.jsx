@@ -15,8 +15,8 @@ export default function SourceCard({ titulo, url, index }) {
       {/* Accent bar */}
       <div className="w-[3px] self-stretch rounded-full flex-shrink-0 bg-[#a813f7]" />
       <div className="flex-1 min-w-0">
-        <p 
-          className="text-xs font-medium leading-snug text-[rgba(255,255,255,0.85)] m-0" 
+        <p
+          className="text-xs font-medium leading-snug text-[rgba(255,255,255,0.85)] m-0"
           style={{ WebkitLineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
         >
           {titulo}

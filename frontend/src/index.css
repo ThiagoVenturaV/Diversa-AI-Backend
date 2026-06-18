@@ -144,6 +144,8 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.9);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    max-width: 100%;
+    overflow: hidden;
 }
 
 /* ── Interactive Chips ── */
@@ -266,19 +268,94 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ── Prose Styles ── */
+/* ── Prose Styles ── */
+
+.prose-bot {
+  line-height: 1.8;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.prose-bot p {
+  margin: 0.8rem 0;
+}
+
+.prose-bot p:first-child {
+  margin-top: 0;
+}
+
+.prose-bot p:last-child {
+  margin-bottom: 0;
+}
+
+.prose-bot strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.prose-bot em {
+  font-style: italic;
+}
+
 .prose-bot a {
   color: #c44ef9;
   text-decoration: underline;
   font-weight: 500;
 }
-.prose-bot strong {
-  color: #ffffff;
-  font-weight: 700;
+
+.prose-bot ul,
+.prose-bot ol {
+  padding-left: 1.5rem;
+  margin: 0.8rem 0;
 }
-.prose-bot ul {
-  padding-left: 1.2em;
-  margin: 0.4em 0;
-}
+
 .prose-bot li {
-  margin: 0.2em 0;
+  margin: 0.4rem 0;
+  line-height: 1.7;
+}
+
+.prose-bot h1,
+.prose-bot h2,
+.prose-bot h3 {
+  font-weight: 700;
+  margin: 1.2rem 0 0.8rem;
+  line-height: 1.4;
+}
+
+.prose-bot h1 {
+  font-size: 1.4rem;
+}
+
+.prose-bot h2 {
+  font-size: 1.2rem;
+}
+
+.prose-bot h3 {
+  font-size: 1.05rem;
+}
+
+.prose-bot blockquote {
+  margin: 1rem 0;
+  padding-left: 1rem;
+  border-left: 3px solid rgba(168, 19, 247, 0.35);
+}
+
+.prose-bot code {
+  font-size: 0.92em;
+  padding: 0.15rem 0.35rem;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.06);
+}
+
+.prose-bot pre {
+  overflow-x: auto;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+}
+
+.prose-bot pre code {
+  padding: 0;
+  background: transparent;
 }

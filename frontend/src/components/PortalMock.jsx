@@ -87,15 +87,15 @@ export default function PortalMock({ onOpenChat }) {
 
           <div className="flex items-center gap-2 sm:gap-4">
             {/* Accessibility Buttons (Visual Mock) */}
-            <button 
+            <button
               className="h-9 px-2.5 sm:px-3 rounded-lg border border-white/10 hover:border-white/20 text-xs font-semibold text-white/80 hover:bg-white/5 transition-all cursor-pointer flex items-center justify-center gap-1.5"
               aria-label="Ativar Alto Contraste"
             >
               <i className="fa-solid fa-circle-half-stroke" />
               <span className="hidden sm:inline">Alto Contraste</span>
             </button>
-            
-            <button 
+
+            <button
               onClick={() => onOpenChat('floating', 'Quais são os princípios da educação inclusiva?')}
               className="h-9 px-4 rounded-lg bg-[#a813f7] hover:bg-[#c44ef9] text-xs font-bold text-white shadow-[0_0_15px_rgba(168,19,247,0.3)] hover:shadow-[0_0_22px_rgba(168,19,247,0.5)] transition-all cursor-pointer hidden sm:flex items-center justify-center gap-1.5"
             >
@@ -106,20 +106,16 @@ export default function PortalMock({ onOpenChat }) {
       </header>
 
       {/* Hero Section */}
-      <section className="w-full py-16 sm:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden border-b border-white/5 flex flex-col items-center justify-center">
-        <div className="w-full max-w-4xl flex flex-col items-center text-center relative z-10">
-          <span className="inline-block bg-[#a813f7]/10 text-[#a813f7] border border-[#a813f7]/30 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider mb-6">
-            Tecnologia de Apoio à Aprendizagem
-          </span>
-          <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white mb-6 leading-tight uppercase text-center">
-            Educação Inclusiva <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#a813f7] to-[#c44ef9]">na Prática</span>
+      <section className="w-full pt-24 pb-10 sm:pt-28 sm:pb-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden border-b border-white/5 flex flex-col items-center justify-center">
+        <div className="w-full max-w-3xl flex flex-col items-center text-center relative z-10 gap-5">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white mb-5 leading-[1.05] uppercase text-center">
+            Educação Inclusiva <p className="text-lg sm:text-xl text-[#c44ef9] font-medium">
+              na prática
+            </p>
           </h1>
-          <p className="text-sm sm:text-lg text-white/60 max-w-2xl mx-auto mb-10 leading-relaxed text-center">
-            Construindo e compartilhando conhecimento sobre práticas inclusivas de qualidade para educadores, gestores escolares e familiares.
-          </p>
 
           {/* Ask AI Bar in Hero */}
-          <div className="w-full max-w-2xl mx-auto">
+          <div className="w-full max-w-3xl mx-auto">
             <form onSubmit={handleSearchSubmit} className="relative">
               <div className="relative rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 pl-3 sm:pl-4 pr-1.5 py-1.5 flex items-center gap-2 transition-all duration-300 focus-within:ring-2 focus-within:ring-[#a813f7]/30 focus-within:border-[#a813f7] focus-within:shadow-[0_0_30px_rgba(168,19,247,0.2)]">
                 <div className="flex items-center text-white/40 flex-shrink-0">
@@ -143,100 +139,72 @@ export default function PortalMock({ onOpenChat }) {
                 </button>
               </div>
             </form>
-            <div className="mt-3 flex items-center justify-center gap-2 flex-wrap text-xs text-white/40">
-              <span>Sugestões:</span>
-              <button 
-                onClick={() => onOpenChat('sidebar', 'O que é educação física inclusiva?')} 
-                className="underline hover:text-[#a813f7] cursor-pointer"
-              >
-                Educação Física Inclusiva
-              </button>
-              <span>·</span>
-              <button 
-                onClick={() => onOpenChat('sidebar', 'O que é ouvintismo estrutural?')} 
-                className="underline hover:text-[#a813f7] cursor-pointer"
-              >
-                Ouvintismo Estrutural
-              </button>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Main Content Articles Grid */}
-      <main id="artigos" className="w-full flex-1 flex flex-col items-center py-16">
-        <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-10 border-b border-white/10 pb-4">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight text-white">
-              Artigos em Destaque
-            </h2>
-            <p className="text-sm text-white/50">
-              Práticas, metodologias e marcos conceituais importantes
-            </p>
-          </div>
-          <a href="#todos" className="text-sm font-semibold text-[#a813f7] hover:text-[#c44ef9] hover:underline flex items-center gap-1">
-            Ver todos os artigos
-            <i className="fa-solid fa-arrow-right text-xs" />
-          </a>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {MOCK_ARTICLES.map((art, idx) => (
-            <div
-              key={idx}
-              className="glass-card rounded-2xl p-6 flex flex-col justify-between group shadow-xl"
-            >
-              <div>
-                <span className="inline-block bg-white/5 text-white/80 border border-white/10 text-[10px] font-bold px-2.5 py-1 rounded-md mb-4 uppercase tracking-wider">
-                  {art.tag}
-                </span>
-                <h3 className="text-xl font-bold text-white group-hover:text-[#a813f7] transition-colors mb-3">
-                  {art.titulo}
-                </h3>
-                <p className="text-white/60 text-sm leading-relaxed mb-6">
-                  {art.snippet}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
-                <a
-                  href="#ler"
-                  className="text-sm font-bold text-white/80 hover:text-[#a813f7] transition-colors flex items-center gap-1.5"
-                >
-                  Ler artigo
-                  <i className="fa-solid fa-arrow-up-right-from-square text-xs text-white/40" />
-                </a>
-
-                {/* Glowing AI Ask Button on Card */}
-                <button
-                  onClick={() => onOpenChat('sidebar', art.query)}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold text-white bg-[#a813f7] hover:bg-[#c44ef9] transition-all cursor-pointer shadow-[0_0_12px_rgba(168,19,247,0.3)] hover:shadow-[0_0_20px_rgba(168,19,247,0.5)]"
-                  aria-label={`Perguntar à IA sobre ${art.titulo}`}
-                >
-                  <i className="fa-solid fa-sparkles text-[10px]" />
-                  Perguntar IA
-                </button>
-              </div>
+      {/* Main Content Articles Grid */}  
+      <main id="artigos" className="w-full flex-1 flex flex-col items-center py-10">
+        <div className="w-full max-w-[1600px] px-6 sm:px-8 lg:px-12">
+          <div className="flex items-center justify-between mb-10 border-b border-white/10 pb-4">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight text-white">
+                Artigos em Destaque
+              </h2>
             </div>
-          ))}
-        </div>
+            <a href="#todos" className="text-sm font-semibold text-[#a813f7] hover:text-[#c44ef9] hover:underline flex items-center gap-1">
+              Ver todos os artigos
+              <i className="fa-solid fa-arrow-right text-xs" />
+            </a>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            {MOCK_ARTICLES.map((art, idx) => (
+              <div
+                key={idx}
+                className="glass-card rounded-2xl p-5 lg:p-6 flex flex-col justify-between group shadow-xl min-h-[100px]"
+              >
+                <div>
+                  <span className="inline-block bg-white/5 text-white/80 border border-white/10 text-[10px] font-bold px-2.5 py-1 rounded-md mb-4 uppercase tracking-wider">
+                    {art.tag}
+                  </span>
+                  <h3 className="text-xl font-bold text-white group-hover:text-[#a813f7] transition-colors mb-3">
+                    {art.titulo}
+                  </h3>
+                </div>
+
+                <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
+                  <a
+                    href="#ler"
+                    className="text-sm font-bold text-white/80 hover:text-[#a813f7] transition-colors flex items-center gap-1.5"
+                  >
+                    Ler artigo
+                    <i className="fa-solid fa-arrow-up-right-from-square text-xs text-white/40" />
+                  </a>
+
+                  {/* Glowing AI Ask Button on Card */}
+                  <button
+                    onClick={() => onOpenChat('sidebar', art.query)}
+                    className="flex items-center gap-1.5 px-4.0 py-2 rounded-lg text-xs font-bold text-white bg-[#a813f7] hover:bg-[#c44ef9] transition-all cursor-pointer shadow-[0_0_12px_rgba(168,19,247,0.3)] hover:shadow-[0_0_20px_rgba(168,19,247,0.5)]"
+                    aria-label={`Perguntar à IA sobre ${art.titulo}`}
+                  >
+                    <i className="fa-solid fa-sparkles text-[10px]" />
+                    Perguntar IA
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </main>
 
       {/* Institutional Footer */}
       <footer className="w-full bg-black text-white/40 py-12 border-t border-white/10 flex justify-center">
         <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <span className="w-8 h-8 rounded-lg bg-[#a813f7] flex items-center justify-center text-white font-bold text-lg shadow-[0_0_10px_rgba(168,19,247,0.4)]">
-              D
-            </span>
-            <span className="text-lg font-bold tracking-tight text-white">
-              DIVERSA
-            </span>
+          <div className="flex items-center gap-3">       
           </div>
-          <p className="text-xs text-center md:text-right">
-            © {new Date().getFullYear()} DIVERSA. Uma iniciativa do Instituto Rodrigo Mendes. Todos os direitos reservados.
+          <p className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            © {new Date().getFullYear()} DIVERSA AI. Todos os direitos reservados.
           </p>
         </div>
       </footer>

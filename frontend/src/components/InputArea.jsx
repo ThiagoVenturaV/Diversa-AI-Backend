@@ -121,18 +121,18 @@ export default function InputArea({ value, onChange, onSend, loading }) {
       </div>
 
       <div className="max-w-3xl mx-auto">
-        <div 
-          className="input-wrap flex items-center gap-1.5 sm:gap-3 px-2.5 py-2 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl bg-[rgba(255,255,255,0.03)]"
+        <div
+          className="input-wrap flex items-center gap-2 sm:gap-3 px-3 py-2.5 sm:px-5 sm:py-3.5 rounded-xl sm:rounded-2xl bg-[rgba(255,255,255,0.03)]"
         >
           <textarea
             ref={ref}
             value={value}
             onChange={e => onChange(e.target.value)}
             onKeyDown={onKey}
-            placeholder="Pergunte sobre Educação Inclusiva..."
+            placeholder="Pergunte alguma coisa"
             rows={1}
             disabled={loading}
-            className="flex-1 text-xs sm:text-sm leading-relaxed bg-transparent border-none outline-none text-white resize-none h-[20px] sm:h-[24px] max-h-[140px] placeholder-[rgba(255,255,255,0.3)] py-1"
+            className="flex-1 text-sm sm:text-base leading-relaxed bg-transparent border-none outline-none text-white resize-none min-h-[28px] sm:min-h-[32px] max-h-[140px] placeholder-[rgba(255,255,255,0.3)] py-1.5"
           />
 
           {/* Speech-to-Text Microphone Button */}
@@ -142,11 +142,10 @@ export default function InputArea({ value, onChange, onSend, loading }) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             aria-label={isListening ? "Parar gravação de voz" : "Gravar pergunta com voz (Atalho Alt+M)"}
-            className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 cursor-pointer transition-all ${
-              isListening 
-                ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.6)]' 
-                : 'bg-transparent border border-[rgba(168,19,247,0.3)] hover:bg-[rgba(168,19,247,0.1)] text-[#c44ef9]'
-            }`}
+            className={`-10 h-10 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 cursor-pointer transition-all ${isListening
+              ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.6)]'
+              : 'bg-transparent border border-[rgba(168,19,247,0.3)] hover:bg-[rgba(168,19,247,0.1)] text-[#c44ef9]'
+              }`}
           >
             {isListening ? (
               <div className="audio-wave-container" aria-hidden="true">
@@ -157,7 +156,7 @@ export default function InputArea({ value, onChange, onSend, loading }) {
                 <div className="audio-wave-bar bg-white w-[2px]" style={{ height: '6px' }} />
               </div>
             ) : (
-              <i className="fa-solid fa-microphone text-[12px] sm:text-[14px]" />
+              <i className="fa-solid fa-microphone text-[14px] sm:text-[16px]" />
             )}
           </motion.button>
 
@@ -170,12 +169,9 @@ export default function InputArea({ value, onChange, onSend, loading }) {
             aria-label="Enviar mensagem"
             className="btn-send w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 cursor-pointer disabled:cursor-not-allowed text-white"
           >
-            <i className="fa-solid fa-paper-plane text-[11px] sm:text-[13px]" />
+            <i className="fa-solid fa-paper-plane text-[14px] sm:text-[16px]" />
           </motion.button>
         </div>
-        <p className="text-center text-[9px] sm:text-[10px] mt-1.5 sm:mt-2 text-[rgba(255,255,255,0.18)] m-0">
-          Enter para enviar · Alt+M para microfone
-        </p>
       </div>
     </div>
   )

@@ -17,9 +17,6 @@ export default function Header({ layoutMode, onChangeLayoutMode, onClose }) {
 
       <div className="flex-1 min-w-0">
         <h1 className="text-sm font-bold tracking-tight leading-tight m-0 text-white">Assistente Diversa AI</h1>
-        <p className="text-[10px] leading-tight truncate text-[rgba(255,255,255,0.5)] m-0">
-          Educação Inclusiva · Portal Diversa
-        </p>
       </div>
 
       {/* Controls Container */}
