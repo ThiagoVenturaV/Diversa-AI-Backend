@@ -1263,7 +1263,7 @@ textarea:focus-visible {
 }
 
 .partner-logo {
-  height: 14px;
+  height: 38px;
   display: flex;
   align-items: center;
   opacity: 0.8;
@@ -1330,7 +1330,7 @@ textarea:focus-visible {
 }
 
 .accenture-footer-logo {
-  height: 16px;
+  height: 28px;
   display: flex;
   align-items: center;
 }
