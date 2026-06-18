@@ -1268,6 +1268,7 @@ textarea:focus-visible {
   align-items: center;
   opacity: 0.8;
   transition: var(--transition-fast);
+  transform: translateY(-5px);
 }
 .brand-partnership:hover .partner-logo {
   opacity: 1;
@@ -1275,7 +1276,7 @@ textarea:focus-visible {
 
 .partner-logo svg {
   height: 100%;
-  width: auto;
+  aspect-ratio: 153 / 40;
   display: block;
 }
 
@@ -1333,10 +1334,11 @@ textarea:focus-visible {
   height: 28px;
   display: flex;
   align-items: center;
+  transform: translateY(-4px);
 }
 
 .accenture-footer-logo svg {
   height: 100%;
-  width: auto;
+  aspect-ratio: 153 / 40;
   display: block;
 }
