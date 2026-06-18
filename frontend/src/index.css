@@ -6,8 +6,8 @@
   --color-brand-light: #c44ef9;
   --color-brand-glow: rgba(168, 19, 247, 0.35);
   --color-bg-black: #000000;
-  --color-bg-card: rgba(0, 0, 0, 0.9);
-  --color-bg-card-hover: rgba(10, 10, 12, 0.95);
+  --color-bg-card: #0f0f12;
+  --color-bg-card-hover: #19191e;
   --color-border: rgba(255, 255, 255, 0.08);
   --color-border-hover: rgba(168, 19, 247, 0.45);
   --color-text-white: #ffffff;
