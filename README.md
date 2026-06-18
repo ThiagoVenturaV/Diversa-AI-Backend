@@ -23,11 +23,11 @@ pergunta do usuário  ─────────────────►  co
 ├── requirements.txt    # Dependências Python
 ├── .env                # Chaves de API (não versionado)
 ├── .env.example        # Modelo do .env
-└── frontend/           # Interface React + Vite + Tailwind CSS
+└── frontend/           # Interface React + Vite + Custom CSS
     ├── src/
     │   ├── App.jsx
     │   ├── main.jsx
-    │   └── index.css
+    │   └── index.css   # Custom CSS Design System
     ├── index.html
     ├── package.json
     └── vite.config.js
@@ -128,5 +128,5 @@ O backend já tem CORS configurado (`Access-Control-Allow-Origin: *`).
 |---|---|
 | React 19 | Interface do chat |
 | Vite | Bundler e dev server |
-| Tailwind CSS 4 | Estilização |
+| Custom CSS (Vanilla) | Estilização responsiva, glassmorphism e efeitos Awwwards |
 | Framer Motion | Animações |
