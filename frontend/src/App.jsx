@@ -105,7 +105,6 @@ export default function App() {
           }
           if (ev === 'done') {
             setMsgs(p => p.map(m => m.id === uBot ? { ...m, streaming: false } : m))
-            widgetRef.current?.translate(full)
           }
           if (ev === 'error') {
             setMsgs(p => p.map(m => m.id === uBot
