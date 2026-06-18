@@ -7,6 +7,7 @@ import BotMsg from './components/BotMsg'
 import Typing from './components/Typing'
 import InputArea from './components/InputArea'
 import PortalMock from './components/PortalMock'
+import LibrasWidget from './libras-widget/index.js'
 
 let _id = 0
 const uid = () => ++_id
@@ -18,6 +19,17 @@ export default function App() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const chatEl = useRef(null)
+  const widgetRef = useRef(null)
+
+  useEffect(() => {
+    widgetRef.current = new LibrasWidget({
+      color: '#a813f7',
+      position: 'bottom-left'
+    })
+    return () => {
+      widgetRef.current?.destroy()
+    }
+  }, [])
 
   const scroll = useCallback(() => {
     requestAnimationFrame(() => {
@@ -93,6 +105,7 @@ export default function App() {
           }
           if (ev === 'done') {
             setMsgs(p => p.map(m => m.id === uBot ? { ...m, streaming: false } : m))
+            widgetRef.current?.translate(full)
           }
           if (ev === 'error') {
             setMsgs(p => p.map(m => m.id === uBot
@@ -156,6 +169,7 @@ export default function App() {
                 text={m.text}
                 sources={m.sources}
                 streaming={m.streaming}
+                onTranslate={txt => widgetRef.current?.translate(txt)}
               />
             )
           )}

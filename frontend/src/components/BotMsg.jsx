@@ -26,7 +26,7 @@ function md(raw) {
   return html;
 }
 
-export default function BotMsg({ text, sources, streaming }) {
+export default function BotMsg({ text, sources, streaming, onTranslate }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
@@ -41,6 +41,18 @@ export default function BotMsg({ text, sources, streaming }) {
           className={`prose-bot${streaming && text ? ' streaming-cursor' : ''}`}
           dangerouslySetInnerHTML={{ __html: md(text) }}
         />
+
+        {/* Traduzir para Libras Button */}
+        {text && !streaming && (
+          <button
+            onClick={() => onTranslate?.(text)}
+            className="btn-translate-libras"
+            title="Traduzir resposta para LIBRAS"
+          >
+            <i className="fa-solid fa-hands-asl-interpreting" />
+            <span>Traduzir LIBRAS</span>
+          </button>
+        )}
 
         {/* Sources */}
         {sources && sources.length > 0 && (

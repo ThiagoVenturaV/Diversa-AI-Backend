@@ -1211,3 +1211,28 @@ textarea:focus-visible {
   white-space: nowrap;
   border: 0;
 }
+
+/* ── LIBRAS Translation Button inside BotMsg ── */
+.btn-translate-libras {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-white);
+  background-color: rgba(168, 19, 247, 0.1);
+  border: 1px solid rgba(168, 19, 247, 0.25);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.btn-translate-libras:hover {
+  background-color: var(--color-brand);
+  border-color: var(--color-brand);
+  box-shadow: 0 0 12px rgba(168, 19, 247, 0.4);
+}
+.btn-translate-libras i {
+  font-size: 11px;
+}

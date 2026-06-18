@@ -10,7 +10,11 @@ import json
 import re
 import time
 import threading
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 # Garante UTF-8 no terminal Windows (evita UnicodeEncodeError)
 if hasattr(sys.stdout, 'reconfigure'):
@@ -130,93 +134,36 @@ def stream_groq(messages):
     except Exception as e:
         yield f"\n\n❌ Erro: {str(e)}"
 
-# ── Handler HTTP ───────────────────────────────────────────────────────────────
-class Handler(BaseHTTPRequestHandler):
+# ── Servidor FastAPI ─────────────────────────────────────────────────────────
+app = FastAPI(
+    title="Diversa AI API",
+    description="Backend assíncrono para o assistente virtual da Diversa.",
+    version="1.0.0"
+)
 
-    def log_message(self, fmt, *args):
-        print(f"  {self.address_string()} -> {args[0]}")
+# Configuração de CORS integrada
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-    def _cors(self):
-        self.send_header("Access-Control-Allow-Origin",  "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+class PerguntaRequest(BaseModel):
+    pergunta: str
 
-    def do_OPTIONS(self):
-        self.send_response(204)
-        self._cors()
-        self.end_headers()
+def sse_event(event: str, data: dict) -> str:
+    """Formata mensagens no padrão Server-Sent Events (SSE)."""
+    return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
-    def do_GET(self):
-        clean_path = self.path.split("?")[0]
-        if clean_path in ("/", "/index.html"):
-            file_path = os.path.join("dist", "index.html")
-        else:
-            file_path = os.path.join("dist", clean_path.lstrip("/"))
+@app.post("/ask")
+def ask(request: PerguntaRequest):
+    pergunta = request.pergunta.strip()
+    if not pergunta:
+        raise HTTPException(status_code=400, detail="A pergunta não pode estar vazia.")
 
-        if os.path.exists(file_path) and os.path.isfile(file_path):
-            try:
-                self.send_response(200)
-                if file_path.endswith(".html"):
-                    self.send_header("Content-Type", "text/html; charset=utf-8")
-                elif file_path.endswith(".js"):
-                    self.send_header("Content-Type", "application/javascript; charset=utf-8")
-                elif file_path.endswith(".css"):
-                    self.send_header("Content-Type", "text/css; charset=utf-8")
-                elif file_path.endswith(".svg"):
-                    self.send_header("Content-Type", "image/svg+xml")
-                elif file_path.endswith(".png"):
-                    self.send_header("Content-Type", "image/png")
-                elif file_path.endswith(".jpg") or file_path.endswith(".jpeg"):
-                    self.send_header("Content-Type", "image/jpeg")
-                else:
-                    self.send_header("Content-Type", "application/octet-stream")
-                
-                self._cors()
-                self.end_headers()
-                with open(file_path, "rb") as f:
-                    self.wfile.write(f.read())
-            except Exception as e:
-                self.send_response(500)
-                self.end_headers()
-                self.wfile.write(f"Erro ao ler arquivo: {str(e)}".encode("utf-8"))
-        else:
-            # dist/ não encontrado — rode "npm run build" dentro de frontend/ primeiro
-            self.send_response(404)
-            self.send_header("Content-Type", "text/plain; charset=utf-8")
-            self._cors()
-            self.end_headers()
-            self.wfile.write(
-                b"Frontend nao encontrado. Execute: cd frontend && npm run build"
-            )
-
-    def do_POST(self):
-        if self.path != "/ask":
-            self.send_response(404)
-            self.end_headers()
-            return
-
-        length   = int(self.headers.get("Content-Length", 0))
-        body     = self.rfile.read(length)
-        pergunta = json.loads(body).get("pergunta", "").strip()
-
-        if not pergunta:
-            self.send_response(400)
-            self.end_headers()
-            return
-
-        # ── Inicia resposta SSE ────────────────────────────────────────────────
-        self.send_response(200)
-        self.send_header("Content-Type",  "text/event-stream; charset=utf-8")
-        self.send_header("Cache-Control", "no-cache")
-        self.send_header("X-Accel-Buffering", "no")
-        self._cors()
-        self.end_headers()
-
-        def sse(event, data):
-            msg = f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
-            self.wfile.write(msg.encode("utf-8"))
-            self.wfile.flush()
-
+    def sse_generator():
         try:
             # 1) Busca artigos
             artigos = buscar_artigos_relevantes(pergunta)
@@ -249,30 +196,41 @@ class Handler(BaseHTTPRequestHandler):
 
             # 3) Envia fontes encontradas
             if artigos:
-                sse("sources", artigos)
+                yield sse_event("sources", artigos)
 
             # 4) Stream de tokens
             for chunk in stream_groq(messages):
-                sse("token", {"text": chunk})
+                yield sse_event("token", {"text": chunk})
 
             # 5) Finaliza
-            sse("done", {})
+            yield sse_event("done", {})
 
-        except BrokenPipeError:
-            pass  # cliente fechou antes de terminar
         except Exception as e:
-            try:
-                sse("error", {"message": str(e)})
-            except Exception:
-                pass
+            yield sse_event("error", {"message": str(e)})
 
-# ── Inicializa servidor ────────────────────────────────────────────────────────
+    return StreamingResponse(
+        sse_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        }
+    )
+
+# Montagem dos arquivos estáticos do front-end compilado (dist/)
+# Verifica se a pasta dist existe antes de montar, para evitar erros de inicialização.
+if os.path.exists("dist") and os.path.isdir("dist"):
+    app.mount("/", StaticFiles(directory="dist", html=True), name="static")
+else:
+    @app.get("/")
+    def index():
+        return {
+            "error": "Frontend não encontrado. Execute 'cd frontend && npm run build' para compilar os arquivos."
+        }
+
+# ── Inicializa servidor programaticamente via Uvicorn ──────────────────────────
 if __name__ == "__main__":
-    server = HTTPServer(("0.0.0.0", PORT), Handler)
-    print(f"\n[OK] Servidor rodando em http://localhost:{PORT}")
+    import uvicorn
+    print(f"\n[OK] Servidor FastAPI iniciando em http://localhost:{PORT}")
     print("   Pressione Ctrl+C para parar.\n")
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        print("\nServidor encerrado.")
-        server.server_close()
+    uvicorn.run("server:app", host="0.0.0.0", port=PORT, reload=False)
