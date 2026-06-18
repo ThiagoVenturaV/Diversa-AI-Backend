@@ -112,18 +112,14 @@ export default function InputArea({ value, onChange, onSend, loading }) {
   const canSend = !loading && value.trim()
 
   return (
-    <div
-      className="flex-shrink-0 px-2 sm:px-4 pb-3 sm:pb-5 pt-2 sm:pt-3 border-t border-[rgba(168,19,247,0.12)] bg-[rgba(0,0,0,0.65)] backdrop-blur-md"
-    >
+    <div className="input-section-wrapper">
       {/* Screen Reader Live Region for Accessibility Announcements */}
       <div className="sr-only" aria-live="polite" aria-atomic="true">
         {srAnnouncement}
       </div>
 
-      <div className="max-w-3xl mx-auto">
-        <div
-          className="input-wrap flex items-center gap-2 sm:gap-3 px-3 py-2.5 sm:px-5 sm:py-3.5 rounded-xl sm:rounded-2xl bg-[rgba(255,255,255,0.03)]"
-        >
+      <div className="input-area-container">
+        <div className="input-wrap">
           <textarea
             ref={ref}
             value={value}
@@ -132,7 +128,7 @@ export default function InputArea({ value, onChange, onSend, loading }) {
             placeholder="Pergunte alguma coisa"
             rows={1}
             disabled={loading}
-            className="flex-1 text-sm sm:text-base leading-relaxed bg-transparent border-none outline-none text-white resize-none min-h-[28px] sm:min-h-[32px] max-h-[140px] placeholder-[rgba(255,255,255,0.3)] py-1.5"
+            className="chat-textarea"
           />
 
           {/* Speech-to-Text Microphone Button */}
@@ -142,21 +138,18 @@ export default function InputArea({ value, onChange, onSend, loading }) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             aria-label={isListening ? "Parar gravação de voz" : "Gravar pergunta com voz (Atalho Alt+M)"}
-            className={`-10 h-10 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 cursor-pointer transition-all ${isListening
-              ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.6)]'
-              : 'bg-transparent border border-[rgba(168,19,247,0.3)] hover:bg-[rgba(168,19,247,0.1)] text-[#c44ef9]'
-              }`}
+            className={`btn-mic ${isListening ? 'recording' : ''}`}
           >
             {isListening ? (
               <div className="audio-wave-container" aria-hidden="true">
-                <div className="audio-wave-bar bg-white w-[2px]" style={{ height: '10px' }} />
-                <div className="audio-wave-bar bg-white w-[2px]" style={{ height: '14px' }} />
-                <div className="audio-wave-bar bg-white w-[2px]" style={{ height: '8px' }} />
-                <div className="audio-wave-bar bg-white w-[2px]" style={{ height: '12px' }} />
-                <div className="audio-wave-bar bg-white w-[2px]" style={{ height: '6px' }} />
+                <div className="audio-wave-bar" />
+                <div className="audio-wave-bar" />
+                <div className="audio-wave-bar" />
+                <div className="audio-wave-bar" />
+                <div className="audio-wave-bar" />
               </div>
             ) : (
-              <i className="fa-solid fa-microphone text-[14px] sm:text-[16px]" />
+              <i className="fa-solid fa-microphone" style={{ fontSize: '15px' }} />
             )}
           </motion.button>
 
@@ -167,9 +160,9 @@ export default function InputArea({ value, onChange, onSend, loading }) {
             whileHover={canSend ? { scale: 1.05 } : {}}
             whileTap={canSend ? { scale: 0.95 } : {}}
             aria-label="Enviar mensagem"
-            className="btn-send w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 cursor-pointer disabled:cursor-not-allowed text-white"
+            className="btn-send"
           >
-            <i className="fa-solid fa-paper-plane text-[14px] sm:text-[16px]" />
+            <i className="fa-solid fa-paper-plane" style={{ fontSize: '13px' }} />
           </motion.button>
         </div>
       </div>

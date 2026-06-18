@@ -49,9 +49,9 @@ export default function App() {
 
     try {
       const res = await fetch('/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pergunta: q }),
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ pergunta: q }),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
@@ -136,15 +136,15 @@ export default function App() {
   const showTyping = loading && (!lastBot || lastBot.text === '')
 
   const renderChatContent = () => (
-    <div className="flex flex-col h-full w-full overflow-hidden bg-black text-white">
+    <div className="chat-layout-wrapper">
       <Header
         layoutMode={layoutMode}
         onChangeLayoutMode={setLayoutMode}
         onClose={() => setIsOpen(false)}
       />
 
-     <div ref={chatEl} className="flex-1 overflow-y-auto w-full px-4 sm:px-6 md:px-8">
-        <div className="max-w-5xl mx-auto py-8 space-y-6">
+      <div ref={chatEl} className="chat-viewport">
+        <div className="chat-messages-container">
           {noMsgs && <Welcome onChip={t => send(t)} />}
 
           {msgs.map(m =>
@@ -176,7 +176,7 @@ export default function App() {
   )
 
   return (
-    <div className="relative min-h-screen w-full bg-[#f5f8fa] overflow-x-hidden">
+    <div className="app-container">
       {/* Background site portal mock */}
       <PortalMock onOpenChat={handleOpenChat} />
 
@@ -188,7 +188,7 @@ export default function App() {
             animate={{ opacity: 0.5 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsOpen(false)}
-            className="fixed inset-0 bg-black z-45 cursor-pointer backdrop-blur-xs"
+            className="chat-backdrop"
           />
         )}
       </AnimatePresence>
@@ -204,7 +204,7 @@ export default function App() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="fixed inset-y-0 right-0 w-full sm:w-[600px] md:w-[700px] z-50 glass-premium shadow-2xl flex flex-col overflow-hidden text-white sm:rounded-l-3xl sm:border-l sm:border-[rgba(168,19,247,0.3)]"
+              className="chat-drawer-sidebar glass-premium"
             >
               {renderChatContent()}
             </motion.div>
@@ -216,7 +216,7 @@ export default function App() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.85, opacity: 0, y: 60 }}
               transition={{ type: 'spring', damping: 20, stiffness: 180 }}
-              className="fixed inset-0 sm:inset-auto sm:bottom-24 sm:right-6 w-full sm:w-[560px] md:w-[650px] h-full sm:h-[700px] sm:max-h-[75vh] z-50 glass-premium rounded-none sm:rounded-3xl shadow-[0_24px_50px_rgba(0,0,0,0.6)] flex flex-col overflow-hidden text-white border-none sm:border sm:border-[rgba(168,19,247,0.3)]"
+              className="chat-drawer-floating glass-premium"
             >
               {renderChatContent()}
             </motion.div>
