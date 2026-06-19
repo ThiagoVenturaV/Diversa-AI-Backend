@@ -177,8 +177,8 @@ textarea:focus-visible {
 .portal-header-inner {
   width: 100%;
   max-width: 1280px;
-  padding: 0 1.5rem;
-  height: 70px;
+  padding: 0 2rem;
+  height: 85px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1269,6 +1269,7 @@ textarea:focus-visible {
   height: 38px;
   display: flex;
   align-items: center;
+  height: 35px;
   opacity: 0.8;
   transition: var(--transition-fast);
   transform: translateY(-5px);
@@ -1279,6 +1280,7 @@ textarea:focus-visible {
 
 .partner-logo svg {
   height: 100%;
+  width: auto;
   aspect-ratio: 153 / 40;
   display: block;
 }

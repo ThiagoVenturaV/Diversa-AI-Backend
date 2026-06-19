@@ -77,7 +77,7 @@ export default function PortalMock({ onOpenChat }) {
             >
               <span className="portal-logo">DIVERSA</span>
               <span className="partnership-separator">|</span>
-              <span className="partnership-text">em parceria com</span>
+              
               <div className="partner-logo">
                 <svg viewBox="0 0 153 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <title>Accenture</title>
