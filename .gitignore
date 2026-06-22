@@ -29,6 +29,9 @@ artigos.json
 dist/
 frontend/dist/
 
+#pasta do frontend
+frontend/
+
 # Dependências do Node
 node_modules/
 frontend/node_modules/
