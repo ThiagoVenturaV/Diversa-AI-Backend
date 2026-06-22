@@ -742,6 +742,29 @@ textarea:focus-visible {
   color: var(--color-text-white);
 }
 
+.profile-selector-dropdown {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-text-white);
+  border-radius: 6px;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.725rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  margin-top: 0.25rem;
+  display: block;
+}
+.profile-selector-dropdown:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(168, 19, 247, 0.5);
+}
+.profile-selector-dropdown option {
+  background-color: #0f0f12;
+  color: var(--color-text-white);
+}
+
 .chat-header-controls {
   display: flex;
   align-items: center;

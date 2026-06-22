@@ -18,6 +18,8 @@ export default function App() {
   const [msgs, setMsgs] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [profile, setProfile] = useState('familia')
+  const [sessionId, setSessionId] = useState('')
   const chatEl = useRef(null)
   const widgetRef = useRef(null)
 
@@ -26,9 +28,18 @@ export default function App() {
       color: '#a813f7',
       position: 'bottom-left'
     })
+    // Gera um sessionId único para a conversa no boot
+    setSessionId('sess_' + Math.random().toString(36).substring(2, 11))
     return () => {
       widgetRef.current?.destroy()
     }
+  }, [])
+
+  const handleProfileChange = useCallback((newProfile) => {
+    setProfile(newProfile)
+    // Ao trocar de perfil, reinicia a conversa no front e gera um novo sessionId
+    setMsgs([])
+    setSessionId('sess_' + Math.random().toString(36).substring(2, 11))
   }, [])
 
   const scroll = useCallback(() => {
@@ -63,7 +74,11 @@ export default function App() {
       const res = await fetch('/ask', {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({ pergunta: q }),
+         body: JSON.stringify({ 
+           pergunta: q,
+           perfil: profile,
+           session_id: sessionId
+         }),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
@@ -131,7 +146,7 @@ export default function App() {
       setLoading(false)
       setMsgs(p => p.map(m => m.id === uBot ? { ...m, streaming: false } : m))
     }
-  }, [input, loading, scroll])
+  }, [input, loading, scroll, profile, sessionId])
 
   const handleOpenChat = useCallback((mode, initialQuery) => {
     setIsOpen(true)
@@ -153,6 +168,8 @@ export default function App() {
         layoutMode={layoutMode}
         onChangeLayoutMode={setLayoutMode}
         onClose={() => setIsOpen(false)}
+        currentProfile={profile}
+        onChangeProfile={handleProfileChange}
       />
 
       <div ref={chatEl} className="chat-viewport">

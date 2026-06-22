@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb_diversa
+    ports:
+      - "27017:27017"
+    environment:
+      # Cria o usuário root padrão na primeira inicialização
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - diversa-network
+
+  backend:
+    build: .
+    container_name: backend_diversa
+    ports:
+      - "8080:8080"
+    environment:
+      # Conecta ao MongoDB usando o usuário root e a senha injetados via variáveis de ambiente
+      - MONGO_URI=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/?authSource=admin
+      - MONGO_DB=diversa_db
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+    command: >
+      sh -c "python popula_db.py && uvicorn server:app --host 0.0.0.0 --port 8080"
+    networks:
+      - diversa-network
+
+volumes:
+  mongo_data:
+
+networks:
+  diversa-network:
+    driver: bridge

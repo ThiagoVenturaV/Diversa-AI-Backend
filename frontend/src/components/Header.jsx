@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 
-export default function Header({ layoutMode, onChangeLayoutMode, onClose }) {
+export default function Header({ layoutMode, onChangeLayoutMode, onClose, currentProfile, onChangeProfile }) {
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
@@ -15,6 +15,16 @@ export default function Header({ layoutMode, onChangeLayoutMode, onClose }) {
 
       <div className="chat-header-title-container">
         <h1 className="chat-header-title">Assistente Diversa AI</h1>
+        <select
+          value={currentProfile}
+          onChange={(e) => onChangeProfile(e.target.value)}
+          className="profile-selector-dropdown"
+          title="Escolha o perfil de resposta"
+        >
+          <option value="familia">Família 👨‍👩‍👧‍👦</option>
+          <option value="professor">Professor 🏫</option>
+          <option value="gestor">Gestor 💼</option>
+        </select>
       </div>
 
       {/* Controls Container */}

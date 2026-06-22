@@ -1,0 +1,14 @@
+.venv/
+.git/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+db_data/
+mongo_data/
+diversa.index
+frontend/node_modules/
+node_modules/
+.pytest_cache/
+*.log

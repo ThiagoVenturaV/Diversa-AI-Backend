@@ -4,3 +4,6 @@ scikit-learn
 python-dotenv
 fastapi
 uvicorn
+pymongo
+faiss-cpu
+sentence-transformers
