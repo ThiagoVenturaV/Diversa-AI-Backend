@@ -145,4 +145,4 @@ Se preferir rodar os serviços individualmente em sua máquina:
    ```bash
    python server.py
    ```
-6. Acesse **http://localhost:8080**.
+6. Acesse **http://localhost:8080** .
