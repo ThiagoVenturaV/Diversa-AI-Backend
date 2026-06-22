@@ -36,23 +36,24 @@ export default function BotMsg({ text, sources, streaming, onTranslate }) {
     >
       <BotAvatar />
       <div className="bot-text-wrapper">
-        {/* Texto corrido — sem fundo, sem borda */}
-        <div
-          className={`prose-bot${streaming && text ? ' streaming-cursor' : ''}`}
-          dangerouslySetInnerHTML={{ __html: md(text) }}
-        />
-
         {/* Traduzir para Libras Button */}
-        {text && !streaming && (
+        {text && (
           <button
             onClick={() => onTranslate?.(text)}
             className="btn-translate-libras"
             title="Traduzir resposta para LIBRAS"
+            disabled={streaming}
           >
             <i className="fa-solid fa-hands-asl-interpreting" />
             <span>Traduzir LIBRAS</span>
           </button>
         )}
+
+        {/* Texto corrido — sem fundo, sem borda */}
+        <div
+          className={`prose-bot${streaming && text ? ' streaming-cursor' : ''}`}
+          dangerouslySetInnerHTML={{ __html: md(text) }}
+        />
 
         {/* Sources */}
         {sources && sources.length > 0 && (

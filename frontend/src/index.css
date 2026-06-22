@@ -1243,7 +1243,7 @@ textarea:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
   padding: 0.35rem 0.85rem;
   border-radius: 99px;
   font-size: 0.75rem;
@@ -1254,10 +1254,18 @@ textarea:focus-visible {
   cursor: pointer;
   transition: var(--transition-smooth);
 }
-.btn-translate-libras:hover {
+.btn-translate-libras:hover:not(:disabled) {
   background-color: var(--color-brand);
   border-color: var(--color-brand);
   box-shadow: 0 0 12px rgba(168, 19, 247, 0.4);
+}
+.btn-translate-libras:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: rgba(168, 19, 247, 0.03);
+  border-color: rgba(168, 19, 247, 0.10);
+  color: rgba(255, 255, 255, 0.35);
+  box-shadow: none;
 }
 .btn-translate-libras i {
   font-size: 11px;

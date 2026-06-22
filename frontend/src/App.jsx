@@ -22,6 +22,7 @@ export default function App() {
   const [sessionId, setSessionId] = useState('')
   const chatEl = useRef(null)
   const widgetRef = useRef(null)
+  const shouldScrollToBottomRef = useRef(false)
 
   useEffect(() => {
     widgetRef.current = new LibrasWidget({
@@ -50,7 +51,19 @@ export default function App() {
     })
   }, [])
 
-  useEffect(scroll, [msgs, loading, scroll])
+  useEffect(() => {
+    if (isOpen) {
+      shouldScrollToBottomRef.current = true
+      scroll()
+    }
+  }, [isOpen, scroll])
+
+  useEffect(() => {
+    if (shouldScrollToBottomRef.current) {
+      scroll()
+      shouldScrollToBottomRef.current = false
+    }
+  }, [msgs, scroll])
 
   const send = useCallback(async (override) => {
     const q = (override ?? input).trim()
@@ -62,6 +75,7 @@ export default function App() {
     const uUser = uid()
     const uBot = uid()
 
+    shouldScrollToBottomRef.current = true
     setMsgs(p => [
       ...p,
       { id: uUser, role: 'user', text: q },
@@ -116,7 +130,6 @@ export default function App() {
             full += obj.text
             const snap = full
             setMsgs(p => p.map(m => m.id === uBot ? { ...m, text: snap } : m))
-            scroll()
           }
           if (ev === 'done') {
             setMsgs(p => p.map(m => m.id === uBot ? { ...m, streaming: false } : m))
