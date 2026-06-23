@@ -609,7 +609,7 @@ if os.path.exists("dist") and os.path.isdir("dist"):
     app.mount("/", StaticFiles(directory="dist", html=True), name="static")
 else:
     @app.get("/")
-    def index():
+    def fallback_index():
         return {
             "error": "Frontend não encontrado. Execute 'cd frontend && npm run build' para compilar os arquivos."
         }
