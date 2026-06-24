@@ -149,6 +149,24 @@ GUARDRAIL_TRAIN_DATA = [
     ("Oi", 1),
     ("Olá", 1),
     
+    # Agradecimentos, despedidas e confirmações/feedbacks também devem ser classificados como dentro do escopo
+    ("Obrigado", 1),
+    ("Obrigada", 1),
+    ("Muito obrigado pela ajuda!", 1),
+    ("Muito obrigada pelas informações", 1),
+    ("Valeu!", 1),
+    ("Valeu pelas dicas", 1),
+    ("Beleza, valeu", 1),
+    ("Entendi, obrigado", 1),
+    ("Perfeito, muito obrigado!", 1),
+    ("Ok, entendi perfeitamente", 1),
+    ("Show de bola, obrigado", 1),
+    ("Foi muito útil, grato!", 1),
+    ("Muito útil, obrigada!", 1),
+    ("Tchau, até a próxima!", 1),
+    ("agradeço a atenção", 1),
+    ("Tchau!", 1),
+    
     ("Qual o remédio indicado para tratar TDAH em crianças?", 0),
     ("Como diagnosticar autismo no consultório médico?", 0),
     ("Quem vai ganhar as eleições presidenciais este ano?", 0),
@@ -392,34 +410,67 @@ app.add_middleware(
 )
 
 def eh_saudacao_ou_apresentacao(texto: str) -> bool:
-    """Verifica se o texto é uma saudação simples ou uma pergunta de apresentação,
-    permitindo que passe direto para o LLM sem bloqueio do guardrail.
+    """Verifica se o texto é uma saudação simples, agradecimento, confirmação
+    ou uma pergunta de apresentação, permitindo que passe direto para o LLM
+    sem bloqueio do guardrail e sem necessidade de busca RAG.
     """
     # Remove pontuação e converte para minúsculas
     texto_limpo = re.sub(r'[^\w\s]', '', texto.lower()).strip()
     
-    # Conjunto de saudações exatas e perguntas de identificação comuns
+    # Conjunto de saudações exatas, agradecimentos e perguntas de identificação comuns
     saudacoes_e_perguntas = {
+        # Saudações simples
         "oi", "olá", "ola", "hey", "hello", "bom dia", "boa tarde", "boa noite",
         "tudo bem", "tudo bom", "como vai", "como você está", "como voce esta",
         "fala comigo", "me ajuda", "ajuda", "conversar", "oi diversa", "olá diversa",
+        
+        # Perguntas de apresentação/identificação
         "quem é você", "quem e voce", "o que você faz", "o que voce faz",
         "como você pode me ajudar", "como voce pode me ajudar", "quem é", "quem e",
-        "qual o seu nome", "qual seu nome", "diversa", "portal diversa", "ajuda",
+        "qual o seu nome", "qual seu nome", "diversa", "portal diversa",
         "o que e diversa", "o que é diversa", "apresente-se", "apresentese",
-        "obrigado", "obrigada", "valeu", "tchau", "valeu diversa", "obrigado diversa", "obrigada diversa"
+        
+        # Agradecimentos simples
+        "obrigado", "obrigada", "valeu", "grato", "grata", "tchau", "valeu diversa", 
+        "obrigado diversa", "obrigada diversa", "muito obrigado", "muito obrigada",
+        "muitíssimo obrigado", "muitissimo obrigado", "muitíssimo obrigada", "muitissimo obrigada",
+        "obrigado pela ajuda", "obrigada pela ajuda", "obrigado pelas dicas", "obrigada pelas dicas",
+        "valeu pela ajuda", "valeu pelas dicas", "obrigado pela atenção", "obrigada pela atenção",
+        
+        # Confirmações e feedbacks curtos
+        "beleza", "ok", "okay", "entendi", "perfeito", "excelente", "maravilha",
+        "show", "show de bola", "legal", "ótimo", "otimo", "combinado", "certo", 
+        "tudo certo", "tudo bem", "compreendi", "entendido", "muito útil", "muito util",
+        "foi muito útil", "foi muito util", "agradeço", "agradeço a ajuda", "agradeço a atenção"
     }
     
     if texto_limpo in saudacoes_e_perguntas:
         return True
         
-    # Se o texto for muito curto (até 3 palavras) e contiver apenas termos comuns de saudação/contato
+    # Se o texto consistir apenas de palavras de interação/saudação de até 15 palavras
     palavras = texto_limpo.split()
-    if len(palavras) <= 3:
+    if len(palavras) <= 15:
         palavras_chave = {
-            "oi", "olá", "ola", "hey", "hello", "bom", "boa", "dia", "tarde", 
-            "noite", "diversa", "como", "quem", "fala", "tudo", "comigo", "voce", "você",
-            "obrigado", "obrigada", "valeu", "tchau", "grato", "grata"
+            # Saudações
+            "oi", "olá", "ola", "hey", "hello", "bom", "boa", "dia", "tarde", "noite",
+            "salve", "opa", "fala", "comigo", "tudo", "bem", "bom", "como", "vai",
+            "você", "voce", "vocês", "voces", "sr", "sra", "senhor", "senhora", "diversa", "quem", "o", "que", "faz",
+            # Agradecimentos
+            "obrigado", "obrigada", "valeu", "grato", "grata", "agradeço", "agradece",
+            "agradecido", "agradecida", "muito", "muitíssimo", "muitissimo", "demais",
+            # Despedidas / Fim
+            "tchau", "adeus", "até", "ate", "mais", "logo", "breve", "amanhã", "amanha",
+            # Confirmação / Feedback positivo / Acordo / Pragmáticos
+            "beleza", "ok", "okay", "entendi", "perfeito", "perfeitamente", "excelente", "maravilha",
+            "show", "bola", "legal", "ótimo", "otimo", "combinado", "certo", "sim",
+            "certeza", "exato", "exatamente", "isso", "compreendi", "entendido", "esclarecido", "esclarecida", "ajuda",
+            "dicas", "dica", "informação", "informacao", "informações", "informacoes",
+            "resposta", "respostas", "esclarecimento", "esclarecimentos", "atenção", "atencao",
+            "útil", "util", "ajudou", "ajudaram", "esclarecedor", "esclarecedora", "coração", "coracao",
+            # Conectivos e pronomes comuns
+            "de", "do", "da", "pelo", "pela", "pelos", "pelas", "por", "para", "a",
+            "os", "as", "um", "uma", "uns", "umas", "e", "em", "no", "na", "nos", "nas", "com",
+            "foi", "foram", "é", "e", "tão", "tao", "bastante", "super", "gentil", "me", "te", "lhe"
         }
         if all(p in palavras_chave for p in palavras):
             return True
