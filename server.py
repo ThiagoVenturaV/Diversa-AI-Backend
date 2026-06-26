@@ -477,6 +477,31 @@ def eh_saudacao_ou_apresentacao(texto: str) -> bool:
             
     return False
 
+def classificar_interacao(texto: str) -> str:
+    """Classifica o tipo de interação simples (saudacao, agradecimento, despedida ou regular)."""
+    if not eh_saudacao_ou_apresentacao(texto):
+        return "regular"
+        
+    texto_limpo = re.sub(r'[^\w\s]', '', texto.lower()).strip()
+    palavras = texto_limpo.split()
+    
+    # 1. Verifica Agradecimento
+    agradecimentos_keywords = {
+        "obrigado", "obrigada", "valeu", "grato", "grata", "agradeço", "agradece", "agradecido", "agradecida"
+    }
+    if any(p in agradecimentos_keywords for p in palavras):
+        return "agradecimento"
+        
+    # 2. Verifica Despedida
+    despedidas_keywords = {
+        "tchau", "adeus", "até", "ate", "breve", "logo"
+    }
+    if any(p in despedidas_keywords for p in palavras):
+        return "despedida"
+        
+    # 3. Caso contrário, assume Saudação/Apresentação
+    return "saudacao"
+
 class PerguntaRequest(BaseModel):
     pergunta: str
     perfil: Optional[str] = "familia"
@@ -564,11 +589,30 @@ def ask(request: PerguntaRequest):
                         yield sse_event("done", {})
                         return
 
-            # 1) Busca artigos
-            if is_saudacao:
+            # 1) Busca artigos ou classifica interação
+            tipo_interacao = classificar_interacao(pergunta)
+            
+            if tipo_interacao == "agradecimento":
                 artigos = []
                 instrucao = (
-                    "A pergunta é uma saudação, agradecimento ou contato inicial. "
+                    "O usuário está agradecendo ou dando um feedback positivo. "
+                    "Responda de forma muito amigável, calorosa, simpática e acolhedora "
+                    "(ex: 'De nada!', 'Fico muito feliz em ajudar!', 'Disponha!', 'Sempre que precisar de ajuda com inclusão escolar, estou por aqui!'). "
+                    "Seja breve, empático e se coloque à disposição para novas dúvidas sobre Educação Inclusiva."
+                )
+                contexto = "Nenhum artigo necessário para agradecimentos."
+            elif tipo_interacao == "despedida":
+                artigos = []
+                instrucao = (
+                    "O usuário está se despedindo. "
+                    "Responda de forma amigável, educada e calorosa (ex: 'Até logo!', 'Tenha um ótimo dia!', 'Se precisar de mais orientações, é só chamar!'). "
+                    "Seja breve."
+                )
+                contexto = "Nenhum artigo necessário para despedidas."
+            elif tipo_interacao == "saudacao":
+                artigos = []
+                instrucao = (
+                    "A pergunta é uma saudação, contato inicial ou pergunta sobre quem você é. "
                     "Responda de forma amigável, acolhedora, apresente-se como Diversa "
                     "e se coloque à disposição para tirar dúvidas sobre Educação Inclusiva."
                 )
