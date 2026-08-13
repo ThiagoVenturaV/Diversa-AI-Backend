@@ -535,6 +535,7 @@ def classificar_interacao(texto: str) -> str:
 class PerguntaRequest(BaseModel):
     pergunta: str = Field(min_length=1, max_length=2_000)
     perfil: Optional[Literal["professor", "familia", "gestor"]] = "familia"
+    reset_session: bool = False
     # Kept for wire compatibility only. Session ownership comes from the signed cookie.
     session_id: Optional[str] = None
 
@@ -550,7 +551,9 @@ def ask(payload: PerguntaRequest, http_request: Request):
 
     pergunta = payload.pergunta.strip()
     perfil = payload.perfil.strip() if payload.perfil else "familia"
-    session_id = SESSION_SIGNER.verify(http_request.cookies.get(SESSION_COOKIE))
+    session_id = None if payload.reset_session else SESSION_SIGNER.verify(
+        http_request.cookies.get(SESSION_COOKIE)
+    )
     session_token = None
     if session_id is None:
         session_id, session_token = SESSION_SIGNER.issue()
