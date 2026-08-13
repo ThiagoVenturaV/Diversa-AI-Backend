@@ -7,13 +7,17 @@ import os
 import sys
 import json
 import re
-from fastapi import FastAPI, HTTPException
+from collections import OrderedDict
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
+from typing import Literal, Optional
 from datetime import datetime
+
+from security import SessionSigner, SlidingWindowRateLimiter
 
 # Garante UTF-8 no terminal Windows (evita UnicodeEncodeError)
 if hasattr(sys.stdout, 'reconfigure'):
@@ -38,6 +42,16 @@ GROQ_KEY   = os.getenv("GROQ_KEY")
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
 GROQ_URL   = os.getenv("GROQ_URL", "https://api.groq.com/openai/v1/chat/completions")
 PORT       = 8080
+
+if not GROQ_KEY:
+    raise RuntimeError("GROQ_KEY is required")
+
+SESSION_SECRET = os.getenv("SESSION_SECRET", "")
+SESSION_SIGNER = SessionSigner(SESSION_SECRET)
+SESSION_COOKIE = "diversa_session"
+COOKIE_SECURE = os.getenv("COOKIE_SECURE", "true").lower() not in {"0", "false", "no"}
+ASK_RATE_LIMIT = int(os.getenv("ASK_RATE_LIMIT", "20"))
+ASK_LIMITER = SlidingWindowRateLimiter(limit=ASK_RATE_LIMIT, window_seconds=60)
 
 # Perfis de Usuário
 PERFIL_CONFIGS = {
@@ -74,7 +88,9 @@ PERFIL_CONFIGS = {
 }
 
 # Cache de conversas na memória ativa (session_id -> list of messages)
-SESSION_CACHE = {}
+SESSION_CACHE = OrderedDict()
+MAX_CACHED_SESSIONS = 1_000
+MAX_STORED_MESSAGES = 20
 
 # ── Carrega e indexa artigos (MongoDB & FAISS) ────────────────────────────────
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
@@ -387,7 +403,8 @@ def stream_groq(messages, temperature=0.3, max_tokens=600, frequency_penalty=0.0
     except requests.exceptions.Timeout:
         yield "\n\n⏳ Tempo esgotado. Tente novamente."
     except Exception as e:
-        yield f"\n\n❌ Erro: {str(e)}"
+        print(f"[-] Falha ao consultar o provedor de IA: {type(e).__name__}")
+        yield "\n\n❌ Não foi possível consultar o provedor de IA."
 
 # ── Servidor FastAPI ─────────────────────────────────────────────────────────
 app = FastAPI(
@@ -405,9 +422,22 @@ app.add_middleware(
         "http://127.0.0.1:5173"
     ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    content_length = request.headers.get("content-length")
+    if content_length and content_length.isdigit() and int(content_length) > 16_384:
+        return JSONResponse(status_code=413, content={"detail": "Request body too large"})
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    return response
 
 def eh_saudacao_ou_apresentacao(texto: str) -> bool:
     """Verifica se o texto é uma saudação simples, agradecimento, confirmação
@@ -503,8 +533,9 @@ def classificar_interacao(texto: str) -> str:
     return "saudacao"
 
 class PerguntaRequest(BaseModel):
-    pergunta: str
-    perfil: Optional[str] = "familia"
+    pergunta: str = Field(min_length=1, max_length=2_000)
+    perfil: Optional[Literal["professor", "familia", "gestor"]] = "familia"
+    # Kept for wire compatibility only. Session ownership comes from the signed cookie.
     session_id: Optional[str] = None
 
 def sse_event(event: str, data: dict) -> str:
@@ -512,10 +543,17 @@ def sse_event(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 @app.post("/ask")
-def ask(request: PerguntaRequest):
-    pergunta = request.pergunta.strip()
-    perfil = request.perfil.strip() if request.perfil else "familia"
-    session_id = request.session_id.strip() if request.session_id else None
+def ask(payload: PerguntaRequest, http_request: Request):
+    client_key = http_request.client.host if http_request.client else "unknown"
+    if not ASK_LIMITER.allow(client_key):
+        raise HTTPException(status_code=429, detail="Muitas solicitações. Tente novamente em instantes.")
+
+    pergunta = payload.pergunta.strip()
+    perfil = payload.perfil.strip() if payload.perfil else "familia"
+    session_id = SESSION_SIGNER.verify(http_request.cookies.get(SESSION_COOKIE))
+    session_token = None
+    if session_id is None:
+        session_id, session_token = SESSION_SIGNER.issue()
 
     if not pergunta:
         raise HTTPException(status_code=400, detail="A pergunta não pode estar vazia.")
@@ -540,8 +578,8 @@ def ask(request: PerguntaRequest):
                         try:
                             doc = col_conversas.find_one({"session_id": session_id})
                             if doc and "messages" in doc:
-                                SESSION_CACHE[session_id] = doc["messages"]
-                                print(f"[+] Histórico carregado do MongoDB para sessão: {session_id} ({len(doc['messages'])} mensagens)")
+                                SESSION_CACHE[session_id] = doc["messages"][-MAX_STORED_MESSAGES:]
+                                print(f"[+] Histórico carregado do MongoDB ({len(doc['messages'])} mensagens)")
                             else:
                                 SESSION_CACHE[session_id] = []
                         except Exception as db_err:
@@ -550,20 +588,24 @@ def ask(request: PerguntaRequest):
                     else:
                         SESSION_CACHE[session_id] = []
                 
+                SESSION_CACHE.move_to_end(session_id)
+                while len(SESSION_CACHE) > MAX_CACHED_SESSIONS:
+                    SESSION_CACHE.popitem(last=False)
                 msg_historico = SESSION_CACHE[session_id]
                 msg_historico.append({"role": "user", "content": pergunta})
+                del msg_historico[:-MAX_STORED_MESSAGES]
 
             # 0) Guardrail de escopo local
             is_saudacao = eh_saudacao_ou_apresentacao(pergunta)
             
             if guardrail_classifier is not None and model is not None:
                 if is_saudacao:
-                    print(f"[*] Guardrail ignorado para saudação/apresentação: '{pergunta}'")
+                    print("[*] Guardrail ignorado para saudação/apresentação")
                 else:
                     emb_pergunta = model.encode(pergunta)
                     prob = guardrail_classifier.predict_proba([emb_pergunta])[0]
                     prob_fora = prob[0] # Classe 0 é fora do escopo
-                    print(f"[*] Guardrail analisou: '{pergunta}' -> Confiança Fora do Escopo: {prob_fora:.4f}")
+                    print(f"[*] Guardrail analisou a solicitação -> Confiança Fora do Escopo: {prob_fora:.4f}")
                     
                     if prob_fora > 0.65:
                         msg_desvio = "Minha especialidade é Educação Inclusiva. Posso te ajudar com alguma dúvida sobre esse tema?"
@@ -576,7 +618,7 @@ def ask(request: PerguntaRequest):
                                         {
                                             "$set": {
                                                 "perfil": perfil,
-                                                "messages": msg_historico,
+                                                "messages": msg_historico[-MAX_STORED_MESSAGES:],
                                                 "updated_at": datetime.utcnow()
                                             }
                                         },
@@ -674,7 +716,7 @@ def ask(request: PerguntaRequest):
                             {
                                 "$set": {
                                     "perfil": perfil,
-                                    "messages": msg_historico,
+                                    "messages": msg_historico[-MAX_STORED_MESSAGES:],
                                     "updated_at": datetime.utcnow()
                                 }
                             },
@@ -687,9 +729,10 @@ def ask(request: PerguntaRequest):
             yield sse_event("done", {})
 
         except Exception as e:
-            yield sse_event("error", {"message": str(e)})
+            print(f"[-] Falha ao processar pergunta: {type(e).__name__}")
+            yield sse_event("error", {"message": "Não foi possível processar a solicitação."})
 
-    return StreamingResponse(
+    response = StreamingResponse(
         sse_generator(),
         media_type="text/event-stream",
         headers={
@@ -697,6 +740,17 @@ def ask(request: PerguntaRequest):
             "X-Accel-Buffering": "no",
         }
     )
+    if session_token:
+        response.set_cookie(
+            SESSION_COOKIE,
+            session_token,
+            httponly=True,
+            secure=COOKIE_SECURE,
+            samesite="none" if COOKIE_SECURE else "lax",
+            max_age=60 * 60 * 24 * 30,
+            path="/",
+        )
+    return response
 
 # Montagem dos arquivos estáticos do front-end compilado (dist/)
 # Verifica se a pasta dist existe antes de montar, para evitar erros de inicialização.
