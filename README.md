@@ -97,7 +97,11 @@ cp .env.example .env
 Preencha a variável `GROQ_KEY` no arquivo `.env`:
 ```env
 GROQ_KEY="gsk_sua_chave_real_da_api_groq"
+SESSION_SECRET="gere_um_segredo_aleatorio_com_pelo_menos_32_bytes"
 ```
+
+O `SESSION_SECRET` assina o cookie de sessão e deve ser diferente em cada ambiente.
+Em desenvolvimento HTTP local, defina `COOKIE_SECURE=false`; mantenha `true` em produção HTTPS.
 
 ### 3. Compilar o Frontend
 Certifique-se de compilar os arquivos estáticos do frontend localmente para que o FastAPI os sirva:
@@ -115,8 +119,10 @@ docker compose up --build
 Este comando irá:
 1. Subir a instância do **MongoDB**.
 2. Compilar o contêiner do **FastAPI**, baixando o modelo de embeddings local.
-3. Executar o script `popula_db.py` para ler os artigos, vetorizar e salvar no MongoDB e FAISS.
-4. Iniciar o servidor HTTP na porta `8080`.
+3. Iniciar o servidor HTTP na porta `8080` sem substituir dados existentes.
+
+Para popular uma base vazia, execute `python popula_db.py`. A opção `--replace`
+substitui a base de conhecimento e só deve ser usada após backup e confirmação explícita.
 
 Acesse **http://localhost:8080** no navegador.
 

@@ -1,3 +1,4 @@
+import argparse
 import os
 import sys
 import json
@@ -58,16 +59,16 @@ def chunk_texto(texto, chunk_size=1000, overlap=200):
         
     return chunks
 
-def main():
+def main(replace=False):
     # 1. Conecta ao MongoDB
-    print(f"[*] Conectando ao MongoDB em: {MONGO_URI}...")
+    print("[*] Conectando ao MongoDB configurado...")
     try:
         client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
         # Força uma conexão para testar se o banco está de fato ativo
         client.admin.command('ping')
         print("[+] Conectado com sucesso ao MongoDB!")
     except Exception as e:
-        print(f"\n[AVISO] Erro ao conectar ao MongoDB: {e}")
+        print(f"\n[AVISO] Erro ao conectar ao MongoDB: {type(e).__name__}")
         print("[AVISO] Certifique-se de que o MongoDB está rodando localmente ou de que sua URI está correta no .env.")
         print("[AVISO] Não foi possível prosseguir com o povoamento do banco.")
         return
@@ -76,10 +77,16 @@ def main():
     col_artigos = db["artigos"]
     col_chunks = db["artigos_chunks"]
 
-    # Limpa as coleções antigas
-    print("[*] Limpando coleções antigas no MongoDB...")
-    col_artigos.delete_many({})
-    col_chunks.delete_many({})
+    # Nunca substitui a base implicitamente, especialmente durante o boot.
+    has_existing_data = col_artigos.find_one({}, {"_id": 1}) or col_chunks.find_one({}, {"_id": 1})
+    if has_existing_data and not replace:
+        print("[AVISO] A base já contém dados e não foi modificada.")
+        print("[AVISO] Use --replace somente após criar um backup e confirmar a substituição.")
+        return
+    if replace:
+        print("[*] Substituição explícita solicitada; removendo a base de conhecimento antiga...")
+        col_artigos.delete_many({})
+        col_chunks.delete_many({})
 
     # 2. Carrega modelo de Embeddings
     print("\n[*] Carregando modelo de embeddings local (paraphrase-multilingual-MiniLM-L12-v2)...")
@@ -171,4 +178,10 @@ def main():
         print("[-] Erro: Nenhum embedding gerado.")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Popula a base de conhecimento da Diversa AI")
+    parser.add_argument(
+        "--replace",
+        action="store_true",
+        help="substitui artigos e chunks existentes; faça backup antes de usar",
+    )
+    main(replace=parser.parse_args().replace)
