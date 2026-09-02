@@ -61,10 +61,10 @@ graph TD
 * **Busca Semântica (Densa)**: FAISS (Facebook AI Similarity Search) utilizando embeddings locais gerados pelo modelo `paraphrase-multilingual-MiniLM-L12-v2`.
 * **Busca por Termo Exato (Esparsa)**: TF-IDF (`TfidfVectorizer` do `scikit-learn`).
 * **Algoritmo de Hibridização**: RRF (Reciprocal Rank Fusion) para combinar e reordenar os resultados das buscas densa e esparsa.
-* **Provedor de LLM**: API do Groq rodando o modelo **Llama 3.1 8B Instant**.
+* **Provedor de LLM**: API do Groq rodando o modelo **GPT-OSS 120B**.
 
 ### Configurações Aplicadas:
-* **Modelo**: `llama-3.1-8b-instant` via Groq.
+* **Modelo**: `openai/gpt-oss-120b` via Groq.
 * **Parâmetros Dinâmicos por Perfil**:
   * **Família**: Temperatura = `0.5`, Frequency Penalty = `0.2`, Max Tokens = `600` (Foco em empatia e simplicidade).
   * **Professor**: Temperatura = `0.4`, Frequency Penalty = `0.3`, Max Tokens = `600` (Foco em didática e planos de aula).
